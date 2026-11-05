@@ -1,0 +1,12 @@
+{
+  "name": "kitchen-agents",
+  "owner": { "name": "Iagor Moraes" },
+  "description": "Marketplace for the kitchen plugin: a multi-agent kitchen for Claude Code.",
+  "plugins": [
+    {
+      "name": "kitchen",
+      "source": "./",
+      "description": "Grill, spec, tickets with a dry run, parallel stations, review, pass, retro."
+    }
+  ]
+}
