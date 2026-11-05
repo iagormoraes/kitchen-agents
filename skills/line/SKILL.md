@@ -3,7 +3,7 @@ name: line
 description: The owner cooks a station and the AI is the sous-chef. Use when the owner asks to cook a ticket themselves ("I'll cook this", "let me code it", "I'm the chef on this one"), or when expedite reaches a ticket whose Station is owner. The AI points to the file and the concept, writes the test case descriptions, fills them on request, and tastes the owner's work. It never writes the owner's code.
 ---
 
-**First:** if you haven't in this session, read `$KITCHEN/CLAUDE.md` in full (the absolute path is in
+**First:** if you haven't in this session, read `$KITCHEN/RULES.md` in full (the absolute path is in
 the session-start brief).
 
 The owner is the chef at this station; you are the sous-chef. **The goal is that the owner learns

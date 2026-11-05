@@ -5,7 +5,7 @@ description: Step 3 of the kitchen. Turn a finished grill into the spec, the con
 
 Adapted from mattpocock/skills `to-spec` (MIT) and pstack `architect` (MIT).
 
-**First:** if you haven't in this session, read `$KITCHEN/CLAUDE.md` in full (the absolute path is in
+**First:** if you haven't in this session, read `$KITCHEN/RULES.md` in full (the absolute path is in
 the session-start brief). It holds the rules every step below relies on.
 
 Do **not** ask new questions. Write what the grill settled. If you find a gap while writing, go

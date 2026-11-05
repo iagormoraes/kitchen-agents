@@ -6,7 +6,7 @@ description: Step 4 of the kitchen. Cut an approved-to-be spec into one ticket p
 Adapted from mattpocock/skills `to-tickets` and `triage/AGENT-BRIEF.md` (MIT), and pstack
 `feature` throughput checkpoint and `orchestrate` (MIT).
 
-**First:** if you haven't in this session, read `$KITCHEN/CLAUDE.md` in full (the absolute path is in
+**First:** if you haven't in this session, read `$KITCHEN/RULES.md` in full (the absolute path is in
 the session-start brief). It holds the rules every step below relies on.
 
 ## 1. Cut the tickets
@@ -20,7 +20,7 @@ the session-start brief). It holds the rules every step below relies on.
 - Code-coupled work (one feature inside one module) is one ticket. Split only where the outputs
   are independent.
 - Each ticket fits one fresh context window. Too big: split by item, wide first (see "Big orders"
-  in the kitchen CLAUDE.md).
+  in the kitchen RULES.md).
 
 ## 2. Fill each ticket
 

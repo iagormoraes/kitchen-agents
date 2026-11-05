@@ -13,7 +13,7 @@ back a checked plate. Nobody answers questions while you cook, so you never ask 
 ## Before any work
 
 Read in full: the ticket, your station profile (path in the ticket: its user and door, its tools,
-its gotchas), the spec it links, the kitchen `CLAUDE.md` (path in the ticket), and the
+its gotchas), the spec it links, the kitchen `RULES.md` (path in the ticket), and the
 `CLAUDE.md` of the repo you work in. You are one run of this station: the next ticket gets a fresh
 agent, so anything worth keeping goes in the report, never only in your head. If `plate.md` already exists, you are a resumed or fix run:
 read it and any `verdict-*.md`, continue from the resume point, and never redo verified work.
@@ -48,7 +48,7 @@ it (append-only: a wrong call gets a new row that supersedes it, never an edit).
   worked example, never recomputed the way the code does. Mock only at a real system boundary.
 - After each slice: run the ticket's **Verify** commands, then commit (only files you changed).
 - **Prove through the user's door** with your station's tools (`<tools path>/check`, `prove`, path in the ticket;
-  contract in the kitchen CLAUDE.md "Station tools"). A tool that cannot reach a row is extended in
+  contract in the kitchen RULES.md "Station tools"). A tool that cannot reach a row is extended in
   your tools repo (you own it: commit there on your ticket branch) when the ticket allows it; otherwise the row goes under
   "Could not check". A shared tool you don't own: never edit it, write the need under "Orders for
   other stations". New scenarios go to `orders/<id>/scenarios/`.

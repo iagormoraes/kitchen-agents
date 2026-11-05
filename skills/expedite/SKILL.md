@@ -6,7 +6,7 @@ description: Steps 6 to 8 of the kitchen. Dispatch approved tickets to stations,
 Adapted from pstack `orchestrate`, `autopilot-stack`, `ketchup` (MIT) and mattpocock/skills
 `implement-spec` (MIT).
 
-**First:** if you haven't in this session, read `$KITCHEN/CLAUDE.md` in full (the absolute path is in
+**First:** if you haven't in this session, read `$KITCHEN/RULES.md` in full (the absolute path is in
 the session-start brief). It holds the rules every step below relies on.
 
 **You run the order, never the code.** You don't edit a path a station owns. You read diffs and

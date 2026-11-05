@@ -5,7 +5,7 @@ description: Step 9 of the kitchen. After an order goes out, turn every gate, ta
 
 Adapted from mattpocock/skills `retro` and pstack `correct` (MIT).
 
-**First:** if you haven't in this session, read `$KITCHEN/CLAUDE.md` in full (the absolute path is in
+**First:** if you haven't in this session, read `$KITCHEN/RULES.md` in full (the absolute path is in
 the session-start brief). It holds the rules every step below relies on.
 
 ## 1. Count the misses
@@ -27,7 +27,7 @@ For each miss, the earliest step that could have stopped it. Use the strongest f
 in this order:
 
 1. **A check** (a script, test, lint or hook that fails on the mistake). Prove it fails on this
-   real case before adding it. Add a row to "Rule → what enforces it" in the kitchen CLAUDE.md.
+   real case before adding it. Add a row to "Rule → what enforces it" in the kitchen RULES.md.
 2. **A grill checklist line** in `skills/grill/SKILL.md`, worded as the question that would have
    caught it.
 3. **A template field** in `templates/` that forces the answer to be written down, or a

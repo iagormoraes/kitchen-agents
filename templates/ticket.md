@@ -9,7 +9,7 @@
 - **Worktree:** `<absolute worktree folder>`: your only working directory, already on your branch
 - **Branch:** `feat/<order id>-<station>` from base `<base sha>` (already created)
 - **Orders:** `<absolute path of orders/>`: write report, gates and evidence only under `<this>/<order id>/`
-- **Kitchen:** `<absolute path of the kitchen kit>` (its `CLAUDE.md` is your contract)
+- **Kitchen:** `<absolute path of the kitchen kit>` (its `RULES.md` is your contract)
 - **Port:** `<n>` for any server you start. **Shared services:** <name: owner station, and whether you may restart it (only its owner may)>
 - **Spec:** `<absolute path in $KITCHEN_HOME/specs/>` (read-only)
 - **Greenfield:** yes | no

@@ -31,11 +31,11 @@ cat <<INFO
 | WORKTREES | \`$best/worktrees\` |
 
 Before any kitchen step (grill, spec, tickets, dispatch, review, retro), read the full rules in
-\`$kit/CLAUDE.md\`. They are not loaded here: they are too long for the session start.
+\`$kit/RULES.md\`. They are not loaded here: they are too long for the session start.
 
 INFO
 # The principles apply to every change, even small work done without a kitchen skill. Taken from
 # the rules file itself, so there is one source: from "## Principles" up to the next "## ".
-awk '/^## Principles/{on=1; print; next} on && /^## /{exit} on' "$kit/CLAUDE.md"
+awk '/^## Principles/{on=1; print; next} on && /^## /{exit} on' "$kit/RULES.md"
 echo
 cat "$best/kitchen.md"

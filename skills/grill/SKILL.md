@@ -5,7 +5,7 @@ description: Step 2 of the kitchen. Grill the owner about a plan until every dec
 
 Adapted from mattpocock/skills `grilling` (MIT) and pstack `in-your-own-words` / `figure-it-out` (MIT).
 
-**First:** if you haven't in this session, read `$KITCHEN/CLAUDE.md` in full (the absolute path is in
+**First:** if you haven't in this session, read `$KITCHEN/RULES.md` in full (the absolute path is in
 the session-start brief). It holds the rules every step below relies on.
 
 **Done bar:** a station that reads only its ticket could build, test and hand off without asking a
@@ -77,9 +77,9 @@ Each line comes from questions stations had to park in past orders. `retro` adds
 12. **Proof the owner keeps.** Which rows only the owner can taste (👤), with the steps.
 13. **Proof tools.** For each 🤖 row: which station tool proves it (station profile, "Tools").
     No tool reaches it: building or extending the tool is the first ticket of that station.
-    A new station: who is its user, what is the door, which driver (kitchen CLAUDE.md "Station
+    A new station: who is its user, what is the door, which driver (kitchen RULES.md "Station
     tools"), and may the tool add its dependency (for example Playwright in the station's `tools/e2e/`)?
-    Its tools follow the standard contract in the kitchen CLAUDE.md: don't grill their internals.
+    Its tools follow the standard contract in the kitchen RULES.md: don't grill their internals.
 14. **Generators and CLIs.** For each scaffolding command or CLI the work runs (`shadcn init`, a
     migration tool, a code generator): run its `--help` now and put the exact command, with
     flags, in the spec. Its flags change between versions; a guessed flag is a taster round.

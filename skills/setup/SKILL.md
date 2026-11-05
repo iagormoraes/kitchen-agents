@@ -4,7 +4,7 @@ description: Create a kitchen for the project or workspace this session runs in,
 ---
 
 The codebase is never touched: no file in any repo, no line in any `CLAUDE.md`, nothing in `.claude/`.
-Read `$KITCHEN/CLAUDE.md` "Zero footprint" first (the path is in the session-start brief).
+Read `$KITCHEN/RULES.md` "Zero footprint" first (the path is in the session-start brief).
 
 ## 1. Find the root
 
@@ -29,7 +29,7 @@ together).
   session's folder, so a session opened in that repo would never load this kitchen. It gets its
   own kitchen, or the owner moves the root up to a folder that holds both.
 - For each repo, with a fresh read-only `Explore` subagent: stack, build, lint and test commands, how
-  it runs locally, its user and door (kitchen CLAUDE.md "Station tools"), local services it needs.
+  it runs locally, its user and door (kitchen RULES.md "Station tools"), local services it needs.
 
 ## 3. One decision round with the owner
 

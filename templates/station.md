@@ -8,7 +8,7 @@
      - One file, about 60 lines or less: every agent reads it in full.
      - Kitchen-facing facts only. How to write code in this repo (patterns, conventions,
        architecture) stays in the repo's own docs or CLAUDE.md, if it has any; link them, never copy them. Rules shared by
-       all stations stay in the kitchen CLAUDE.md.
+       all stations stay in the kitchen RULES.md.
      - A long craft checklist (for example "compare every window against the mock, line by line")
        goes in $KITCHEN_HOME/stations/<name>/<topic>.md, linked under Gotchas; the ticket says when to read it. -->
 
@@ -43,7 +43,7 @@ mise-en-place makes its ticket block every consumer.>
 - **Door:** <DOM · canvas · HTTP/packets · terminal · code> → **driver:** <Playwright · custom driver · requests · shell>
 - **Did it stick:** <how a proof shows the state was kept: reload, relog, restart then read back>
 
-## Tools (`$KITCHEN_HOME/stations/<name>/tools/`, its own git repo; contract in the kitchen CLAUDE.md "Station tools")
+## Tools (`$KITCHEN_HOME/stations/<name>/tools/`, its own git repo; contract in the kitchen RULES.md "Station tools")
 
 ```bash
 REPO=<worktree> ORDERS=<path> ORDER=<id> PORT=<n> $KITCHEN_HOME/stations/<name>/tools/check

@@ -39,7 +39,7 @@
        a subtype that refuses its parent's contract. Judge against the spec's Design section.
      - Structure (existing projects): does it fit the code around it, or is it bolted on?
      - Security: secrets in client code or logs, unvalidated input reaching the DB or a shell.
-     - The owner's rules: the ticket's Policies, the kitchen CLAUDE.md and the repo CLAUDE.md. -->
+     - The owner's rules: the ticket's Policies, the kitchen RULES.md and the repo CLAUDE.md. -->
 
 - **Reviewed:** `<base sha>..<sha>` on `feat/<order id>-<station>`
 - **Inputs read:** ticket.md, plate.md, spec `<path>`

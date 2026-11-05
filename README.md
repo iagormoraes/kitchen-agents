@@ -35,7 +35,7 @@ flowchart TD
     OUT --> RETRO["kitchen:retro<br/>every miss becomes a check"]
 ```
 
-The rules are in [`CLAUDE.md`](CLAUDE.md). The flow, step by step:
+The rules are in [`RULES.md`](RULES.md). The flow, step by step:
 
 | Step | Skill / agent |
 | --- | --- |

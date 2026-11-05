@@ -37,7 +37,7 @@ Look hardest at:
 - anything the ticket's **Unwritten details** policy settles: a spacing, a variant, a layout
   detail, a log or file name, an internal of a tool the standard tool contract doesn't fix. The
   station picks and logs it; the owner judges at the pass.
-- the internals of station tools the kitchen CLAUDE.md "Station tools" contract already fixes,
+- the internals of station tools the kitchen RULES.md "Station tools" contract already fixes,
 - style choices the Principles or the existing code already decide,
 - anything a run can settle.
 
