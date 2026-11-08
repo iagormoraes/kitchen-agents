@@ -2,7 +2,9 @@
 
 <!-- The permanent half of a station. Agents come and go (one fresh agent per ticket); this file
      is what each of them knows on day one. Lives at $KITCHEN_HOME/stations/<name>/station.md, outside the codebase. Written by
-     the expediter when the station is created; updated only by retro, on the owner's go.
+     the expediter when the station is created; updated by the expediter at
+     each order's out step, from the plate's Profile updates; retro may add a gotcha line, on the
+     owner's go.
 
      Rules:
      - One file, about 60 lines or less: every agent reads it in full.
@@ -36,11 +38,14 @@ mise-en-place makes its ticket block every consumer.>
 - **Ready when:** <a check that proves it is usable, not just that a process answers>
 - **Test data:** <seed command or fixture path, from an empty state>
 - **Stop:** kill only the process you started (its PID), never by name.
+- **Isolation from outside:** the station runs the product's own commands with ordinary
+  overrides (a port variable, its own project or data folder name). It never needs the product to
+  know about stations.
 
 ## Its user and the door
 
 - **User:** <who uses what this station builds: a player, a visitor, the client app, a terminal user>
-- **Door:** <DOM · canvas · HTTP/packets · terminal · code> → **driver:** <Playwright · custom driver · requests · shell>
+- **Door:** <DOM · canvas · HTTP/packets · terminal · code> → **driver:** <browser driver · custom driver · requests · shell>
 - **Did it stick:** <how a proof shows the state was kept: reload, relog, restart then read back>
 
 ## Tools (`$KITCHEN_HOME/stations/<name>/tools/`, its own git repo; contract in the kitchen RULES.md "Station tools")

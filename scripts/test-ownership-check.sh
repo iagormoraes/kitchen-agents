@@ -7,9 +7,9 @@ kit=$(cd "$(dirname "$0")/.." && pwd); chk="python3 $kit/scripts/ownership-check
 t=$(mktemp -d); trap 'rm -rf "$t"' EXIT
 export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@t GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@t
 mkdir -p "$t/repo/app" "$t/repo/lib"; cd "$t/repo"; git init -q
-echo a > app/a.ts; echo l > lib/l.ts; git add .; git commit -qm init; base=$(git rev-parse HEAD)
+echo a > app/a.txt; echo l > lib/l.txt; git add .; git commit -qm init; base=$(git rev-parse HEAD)
 git worktree add -q "$t/wt/0001/repo" -b feat/x "$base"
-cd "$t/wt/0001/repo"; echo b >> app/a.ts; echo m >> lib/l.ts; git commit -qam change
+cd "$t/wt/0001/repo"; echo b >> app/a.txt; echo m >> lib/l.txt; git commit -qam change
 R=$(cd "$t/repo" && pwd -P); W=$(cd "$t/wt/0001/repo" && pwd -P)
 
 expect() {  # <exit code> <owns line tokens> <repo dir> <ref>
@@ -23,8 +23,8 @@ expect 1 "\`$W/app/\`" "$W" HEAD     # same, run on the worktree
 expect 0 "\`$R/\`"     "$W" HEAD     # Owns = main checkout, run on the worktree
 expect 1 "\`app/\`"    "$W" HEAD     # relative Owns: lib/ is stray
 expect 0 "\`app/\`, \`lib/\`, \`/elsewhere/tools/\`" "$W" HEAD   # a path outside the repo is ignored
-expect 1 "\`app/\`, \`lib/\`, \`!lib/l.ts\`" "$W" HEAD   # !path excludes a file inside an owned folder
-expect 2 "\`app/**\` (except \`lib/l.ts\`)" "$W" HEAD   # prose exclusion (pilot line): refused, exit 2
+expect 1 "\`app/\`, \`lib/\`, \`!lib/l.txt\`" "$W" HEAD   # !path excludes a file inside an owned folder
+expect 2 "\`app/**\` (except \`lib/l.txt\`)" "$W" HEAD   # prose exclusion (pilot line): refused, exit 2
 
 # Empty repo (pilot B2): main has no commit; the station's orphan worktree has one.
 mkdir -p "$t/empty"; cd "$t/empty"; git init -q -b main

@@ -8,7 +8,7 @@
 - **Repo:** `<absolute repo path>` (read its `CLAUDE.md`; never work in this folder)
 - **Worktree:** `<absolute worktree folder>`: your only working directory, already on your branch
 - **Branch:** `feat/<order id>-<station>` from base `<base sha>` (already created)
-- **Orders:** `<absolute path of orders/>`: write report, gates and evidence only under `<this>/<order id>/`
+- **Orders:** `<absolute $ORDERS path>`: write the plate, gates and evidence only under `<this>/<order id>/`
 - **Kitchen:** `<absolute path of the kitchen kit>` (its `RULES.md` is your contract)
 - **Port:** `<n>` for any server you start. **Shared services:** <name: owner station, and whether you may restart it (only its owner may)>
 - **Spec:** `<absolute path in $KITCHEN_HOME/specs/>` (read-only)
@@ -21,7 +21,10 @@
 
 ## Scope
 
-- **Owns (may write):** `<path or glob in the repo>`, `!<path it must not write inside them>`, and the tools repo `$KITCHEN_HOME/stations/<station>/tools/` (branch `feat/<order id>-<station>` there too). Exclusions are `!path` tokens, never prose.
+<!-- The Owns line is parsed: only backticked paths or globs on it, nothing else in backticks.
+     Exclusions are `!path` tokens, never prose. The station also owns its tools repo, where it
+     works on branch feat/<order id>-<station>. -->
+- **Owns (may write):** `<path or glob in the repo>`, `!<path it must not write inside them>`, `<absolute path of $KITCHEN_HOME/stations/<station>/tools/>`
 - **Reads (may only read):** `<paths>`
 - **Contracts consumed (frozen, never change):** <name: shape pasted here, or the spec section>
 - **Leaving scope:** a change outside Owns is never made. Write it under "Orders for other stations"
@@ -37,7 +40,7 @@
 
 <The owner cooks this ticket with the sous-chef (`kitchen:line`). Cut it into steps a person
 finishes in one sitting, in the order that builds understanding. The AI never writes these
-files; it writes the test cases (excluded from Owns with `!`, for example `!src/**/*.test.ts`).>
+files; it writes the test cases (excluded from Owns with `!`, for example `!<the repo's test file pattern>`).>
 
 | # | Files (where the change goes) | Concept (what to learn here) | Test cases (pending, from the spec) |
 | --- | --- | --- | --- |
@@ -87,5 +90,5 @@ verified. Never keep going past it silently.>
 
 ## Hand back
 
-1. `orders/<order id>/plate.md` from `templates/plate.md`.
+1. `$ORDERS/<order id>/plate.md` from `templates/plate.md`.
 2. Five lines: `status` · `branch @ last sha` · `🤖 rows passed / total` · `open gates` · `blocker, or none`

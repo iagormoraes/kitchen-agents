@@ -41,6 +41,14 @@ recommendation, worded so "yes" accepts it:
 A question that depends on another question still open in this round belongs to a later round.
 Settled answers move the frontier outward. Recompute it and ask again.
 
+**One at a time, when the owner asks.** If the owner asks for one question at a time, keep it so
+for the rest of the grill: one decision per message. Plain confirmations of your own
+recommendations can still go together ("Q5 to Q8 take my defaults: yes?"), so the grill doesn't
+turn into dozens of one-word turns.
+
+**Mark what doesn't exist yet.** A URL, a command or a screen that exists only after cooking is
+always written as such ("after the build: `http://localhost:<port>`"), never as if it were live.
+
 ## 3. The checklist (every grill covers these)
 
 Each line comes from questions stations had to park in past orders. `retro` adds lines here.
@@ -61,8 +69,8 @@ Each line comes from questions stations had to park in past orders. `retro` adds
 6. **Defaults.** Constant or setting? (Default: constant.) New dependency allowed? (Default: no.)
    Behavior on bad input or error? Copy and text: who writes it, which languages?
 7. **Reference for the look.** Any visual or feel outcome needs a reference agreed now: a mock, a
-   screenshot, an existing screen, or a design system's defaults (for example "shadcn's default
-   theme"). "Looks right" without a reference is a future round.
+   screenshot, an existing screen, or a design system's defaults (for example "the UI kit's
+   default theme"). "Looks right" without a reference is a future round.
 8. **Unwritten details.** Agree the standing rule for every detail the spec doesn't spell out
    (a spacing, a button variant, a tool's log name): **the station picks the reference's default
    or the simplest option, logs it in its plate's Decisions table, and the owner judges at the
@@ -78,10 +86,10 @@ Each line comes from questions stations had to park in past orders. `retro` adds
 13. **Proof tools.** For each 🤖 row: which station tool proves it (station profile, "Tools").
     No tool reaches it: building or extending the tool is the first ticket of that station.
     A new station: who is its user, what is the door, which driver (kitchen RULES.md "Station
-    tools"), and may the tool add its dependency (for example Playwright in the station's `tools/e2e/`)?
+    tools"), and may the tool add its dependency (for example a browser driver in the station's `tools/e2e/`)?
     Its tools follow the standard contract in the kitchen RULES.md: don't grill their internals.
-14. **Generators and CLIs.** For each scaffolding command or CLI the work runs (`shadcn init`, a
-    migration tool, a code generator): run its `--help` now and put the exact command, with
+14. **Generators and CLIs.** For each scaffolding command or CLI the work runs (a project
+    generator, a UI kit's init, a migration tool, a code generator): run its `--help` now and put the exact command, with
     flags, in the spec. Its flags change between versions; a guessed flag is a taster round.
     Then **build what the spec will name**: run the scaffold in a throwaway folder (your scratch
     space, never the repo), install every add-on the spec allows (a test runner, a UI kit), add
@@ -89,8 +97,18 @@ Each line comes from questions stations had to park in past orders. `retro` adds
     and test it. Paste the generated config into the spec. Never specify an export, flag or
     version the built scaffold hasn't accepted.
 
+15. **The owner's daily loop.** How will the owner run this every day, after the order? Agree
+    each owner command now: what it does, and that it needs **no argument** on the common path
+    (every value has a default). The daily loop reloads on change; a production-like run is a
+    separate command. These commands are the product's own: nothing in them exists for stations
+    (RULES.md "Zero footprint"). They go in the spec's **Owner commands**.
+    **Check every default on this machine** (a fact, not a question): each default port is free,
+    each default folder is writable. A default that something else already uses is chosen again
+    now. And a command whose port is taken stops with a clear message; it never starts half.
+
 ## 4. Close
 
 The grill is done when the frontier is empty and every checklist line has an answer. Show the
 owner one summary: **decisions**, **policies** (tie-breaks + defaults), **out of scope**,
-**stations and ownership**. Do not act until the owner confirms. Then run the `menu` skill.
+**stations and ownership**, **owner commands** (marked "after the build"). Do not act until the
+owner confirms. Then run the `menu` skill.

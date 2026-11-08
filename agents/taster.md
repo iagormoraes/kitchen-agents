@@ -30,7 +30,10 @@ Look hardest at:
 - a contract it consumes that is not frozen or not pasted,
 - an expected text in a smoke row or Done-when line that the spec's own transforms (normalize,
   encode, escape, trim) would change, so the check could never pass as written,
-- an `Owns` line with an exclusion in prose ("except `x`"): it must be `!x`.
+- an `Owns` line with an exclusion in prose ("except `x`"): it must be `!x`,
+- an owner command (spec **Owner commands**) that needs an argument on the common path, or a
+  product file, setting or name the ticket asks for only because stations need it (a station or
+  order name, an isolation port base): it must come from outside, through the station tools.
 
 **Not questions** (never list them):
 

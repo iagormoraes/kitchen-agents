@@ -15,7 +15,7 @@
 
 | Id | Result | Level | Evidence |
 | --- | --- | --- | --- |
-| <id> | pass / fail | e2e-verified / runtime-verified / test-verified / build-only / blocked | `orders/<id>/evidence/<file>` |
+| <id> | pass / fail | e2e-verified / runtime-verified / test-verified / build-only / blocked | `$ORDERS/<id>/evidence/<file>` |
 
 ## What I ran
 

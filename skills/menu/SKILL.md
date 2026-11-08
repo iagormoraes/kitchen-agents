@@ -29,10 +29,13 @@ back to `grill` for that one branch.
      and the alternative you rejected with the reason.
    In an existing project, skip this step: the Design section says "follow the patterns in
    `<paths>`" and names them.
-4. **Run every expected text through the spec's own rules.** For each smoke row and Behavior
+4. **The owner tastes through the daily loop.** Every 👤 row runs the spec's **Owner commands**
+   (the daily "start developing" one), never a production-like build. A production-like run is a
+   🤖 row a station proves. Every owner command has a default for every value.
+5. **Run every expected text through the spec's own rules.** For each smoke row and Behavior
    line, pass its expected value through the transforms the spec applies (normalize, encode,
-   escape, trim, round) and check it still reads as written. `<script>` in a URL is stored as
-   `%3Cscript%3E` by `new URL()`; a row expecting the raw text can never pass.
-5. Keep the spec a contract, not a research log: about 300 lines or less. Long findings go to
+   escape, trim, round) and check it still reads as written. A URL encoder stores `<` as `%3C`,
+   so a row expecting the raw text can never pass.
+6. Keep the spec a contract, not a research log: about 300 lines or less. Long findings go to
    `$KITCHEN_HOME/specs/research/` and the spec links them.
-6. Run the `mise-en-place` skill.
+7. Run the `mise-en-place` skill.

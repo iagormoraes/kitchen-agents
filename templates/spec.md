@@ -51,6 +51,17 @@
 <Greenfield: modules, their interfaces (caller usage first), who owns which state, the rejected
 alternative and why. Existing project: "follow the patterns in <paths>".>
 
+## Owner commands
+
+<The product's own commands the owner types day to day, from grill line 15. Each needs no argument
+on the common path: every value has a default. Nothing here exists for stations: they reuse these
+commands with ordinary overrides (RULES.md "Zero footprint").>
+
+| Command (after the build) | Does | Defaults | When |
+| --- | --- | --- | --- |
+| <start developing> | <runs the app and what it needs, reloads on change> | <port, data folder…> | daily |
+| <production-like run> | <builds and runs it as it will ship> | <…> | before a release; proven by a station |
+
 ## Stations
 
 | Station | Repo / module | Owns | Blocked by | Budget |
@@ -64,3 +75,4 @@ real payment). Write a row as 🤖 whenever a check can prove it.>
 | ✓ | Id | Who | Steps | Expected |
 | --- | --- | --- | --- | --- |
 |   | S1 | 🤖 | <exact steps> | <exact result> |
+|   | S<n> | 👤 | the daily loop: the **Owner commands** "start developing" command, with no argument; change one behavior | it starts, and the change takes effect without a restart |

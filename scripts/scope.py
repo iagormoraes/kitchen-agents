@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Count a big order's scope list: the line every progress update to the owner starts with.
 
-    python3 scope.py orders/<spec>-scope.json [-v]
+    python3 scope.py $ORDERS/<spec>-scope.json [-v]
     python3 scope.py                                # selftest
 
 The list is JSON: [{"group": ..., "name": ..., "status": ...}, ...].
 Status, in order: todo < first-pass < checked < owner (the owner tasted it).
-Stations move a row up when they finish it. -v lists the rows not yet checked.
+The expediter moves a row up from the plates (one writer per file). -v lists the rows not yet checked.
 """
 import json
 import sys

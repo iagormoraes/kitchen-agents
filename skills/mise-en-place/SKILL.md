@@ -24,7 +24,7 @@ the session-start brief). It holds the rules every step below relies on.
 
 ## 2. Fill each ticket
 
-Copy `$KITCHEN/templates/ticket.md` to `orders/<id>/ticket.md`. Every field filled. Start from the
+Copy `$KITCHEN/templates/ticket.md` to `$ORDERS/<id>/ticket.md`. Every field filled. Start from the
 station's profile `$KITCHEN_HOME/stations/<name>/station.md`: `Owns` may narrow its default, never widen it; Verify uses
 its tools' `check` and `prove`, and Owns always includes its tools repo `$KITCHEN_HOME/stations/<name>/tools/`. A station with no profile gets one first (from `templates/station.md`), approved with the spec. Paste, never
 point at this chat: a station cannot see it. Copy the spec's **Policies** and the applying
@@ -40,17 +40,19 @@ alone?
 ## 3. Check ownership
 
 List each ticket's `Owns`. No path or glob may appear in two tickets, and no glob may contain
-another ticket's path. A shared file (a route table, a barrel export, a lock file) gets one owner;
-the others put what they need under "Orders for other stations" in their report, or the owner's
+another ticket's path. A shared file (a route table, an index or re-export file, a lock file) gets one owner;
+the others put what they need under "Orders for other stations" in their plate, or the owner's
 ticket does it first.
 
 ## 4. Dry run with the taster
 
-First create each station's worktree and branches (the `expedite` dispatch command), so every path
-the ticket names exists when the taster checks it.
+First create each station's worktree and branches, **once** (the commands in `expedite` §1
+Dispatch; no worktree for a `Station: owner` ticket), so every path the ticket names exists when the
+taster checks it. `expedite` reuses them.
 
 For each ticket, run `Agent` with `subagent_type: kitchen:taster`, giving it only the ticket path and the
-spec path. It returns `facts: N · decisions: N`.
+spec path. It returns `facts: N · decisions: N`. Save each answer, unchanged, to
+`$ORDERS/<id>/taster-<round>.md`: the retro counts them.
 
 - **Fact:** add it to the ticket (a path, a command, a value, a permission).
 - **Decision:** back to `grill` for that branch, then into the spec and the ticket.
@@ -64,13 +66,16 @@ spec path. It returns `facts: N · decisions: N`.
 
 ## 5. Owner approval
 
-Show the owner, in one message, opening with: **"This approves the plan, not the result. You taste
+Write every URL or command that exists only after cooking as "after the build". Show the owner,
+in one message, opening with: **"This approves the plan, not the result. You taste
 the real thing before anything reaches `main`."**
 
 1. The spec path and a 5-line summary.
 2. The **ownership map**: station, owns, blocked by, budget.
 3. The 👤 rows they will taste.
-4. `taster: facts 0 · decisions 0 on N tickets, in R rounds` (or the leftovers after 3 rounds).
+4. `taster: facts 0 · decisions 0 on N tickets, in R rounds`.
+5. **Attention:** the leftovers after 3 taster rounds, or "none".
 
-The owner approves, asks for changes (back to the step that owns the change), or rejects.
+The owner approves, asks for changes (back to the step that owns the change), or rejects. A
+rejection deletes the worktrees and branches made for the taster.
 Approved = the order is frozen. Then run the `expedite` skill.

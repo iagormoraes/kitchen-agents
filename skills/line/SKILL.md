@@ -24,11 +24,12 @@ through Bash or any other tool.
 1. The ticket is `Station: owner`, cut by `mise-en-place` into **steps**, each with: the files, the
    concept, the test cases (template: `templates/ticket.md`, "Owner steps").
 2. The owner cooks in their own folder. Switch it to the ticket's branch yourself, as `expedite`
-   step 5 does (look first: never over uncommitted changes). The owner never runs git.
-3. Write the **test case descriptions** for every step into the test files, as pending tests in
-   the repo's runner (`it.todo("adds a task and returns it with done false")`, `test.todo`, a
-   skipped test): one line per behavior, from the spec. No test bodies yet. Test files are yours:
-   the owner ticket excludes them (`!src/**/*.test.ts`).
+   §5 Set the table does (look first: never over uncommitted changes). An owner ticket has no
+   worktree, so the branch is free to switch to. The owner never runs git.
+3. Write the **test case descriptions** for every step into the test files, as pending or skipped
+   tests in the repo's own test runner ("adds a task and returns it with done false"): one line per
+   behavior, from the spec. No test bodies yet. Test files are yours: the owner ticket excludes them
+   with a `!` glob that matches them (`!<the repo's test file pattern>`).
 
 ## Each step
 
@@ -41,8 +42,8 @@ deeper on the **same pointer**, never toward a snippet:
 | "explain" / "I'm stuck" | The concept in more depth: how it works, the trap it avoids, the official doc section. Another real place in the codebase that does the same thing. Still no code |
 | "why" | The reason from the spec or the Design: which decision this step serves |
 | "fill" (the tests) | The test bodies for the pending cases you named (you own the test files). Run them: they fail until the owner's code is there |
-| "taste" | Run the station check and the filled tests. Then the reviewer (`kitchen:reviewer`) on the owner's diff. Give findings as questions with a pointer ("what does `createTask` return when the title is empty? `src/lib/store.ts:24`"), never as patches |
-| "take over" | Only on those words: create `$ORDERS/<id>/takeover`, log it in the plate's Decisions table (`take over`, step, why), write the code, then remove the file. Retro reads it |
+| "taste" | Run the station check and the filled tests. Then the reviewer (`kitchen:reviewer`) on the owner's diff. Give findings as questions with a pointer ("what does `createTask` return when the title is empty? `<file>:<line>`"), never as patches |
+| "take over" | Only on those words: create `$ORDERS/<id>/takeover`, log it in the plate's Decisions table (`take over`, step, why), write the code, then remove the file. Retro reads the `take over` rows |
 
 No code in your answers: no snippets, no "it would look like", no pseudocode. File, concept,
 pattern, test case, question.

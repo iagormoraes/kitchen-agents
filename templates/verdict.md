@@ -1,6 +1,6 @@
 # Verdict <order id> @ <sha>
 
-<!-- Written by the reviewer agent. Save as orders/<order id>/verdict-<sha>.md, where <sha> is the
+<!-- Written by the reviewer agent. Save as $ORDERS/<order id>/verdict-<sha>.md, where <sha> is the
      last commit of the branch you reviewed. A later commit needs a new verdict that reviews only
      the change since this one.
 
@@ -8,8 +8,8 @@
      1. Read ticket.md, the spec and plate.md before the diff. The intent below comes from them.
      2. Review `git diff <base>..<sha>`, and read the callers and callees around it, not only the
         changed lines.
-     3. Spot-check the evidence: open at least two of the evidence files the report cites and
-        confirm they show what the report claims. Re-run one cheap check from "What I ran".
+     3. Spot-check the evidence: open at least two of the evidence files the plate cites and
+        confirm they show what the plate claims. Re-run one cheap check from "What I ran".
      4. Apply the lenses below. Skip a lens that does not apply; a small fix does not need an
         essay on architecture.
      5. Filter before you write (rules at the bottom). At most 5 findings in "Act on".
@@ -24,7 +24,7 @@
      - Ownership: every changed path inside the ticket's Owns. Outside = Act on.
      - User's door: a scenario or check that calls internals, a test-only endpoint or writes the DB
        to cause the effect it then "proves" is not proof. Act on.
-     - Verification: does the evidence prove the behavior at the level the report claims? A
+     - Verification: does the evidence prove the behavior at the level the plate claims? A
        `build-only` row presented as a pass is a finding. A test that recomputes its expected
        value the way the code does, or mocks an internal, proves nothing.
      - YAGNI: options, settings, layers or abstractions for cases the spec doesn't have
@@ -55,7 +55,7 @@ the code against this, not against what the reviewer would have built.>
 ## Act on
 
 <At most 5. Each would block a merge: wrong behavior, data loss, security, a broken owner rule,
-evidence that does not prove what the report claims.>
+evidence that does not prove what the plate claims.>
 
 ### A1 · <short title>
 
@@ -88,6 +88,11 @@ override the review.>
      - Missing context: a pattern that matches the rest of the codebase, or code the change did
        not touch, is not a finding against this change.
      - Do not dismiss a security or data-loss finding without tracing it.
+     - Kitchen leak: a product file, setting, name, label or argument that exists only because
+       stations need it, or any kitchen term in product code (kitchen, station, order or ticket
+       as concepts, the orders or kitchen paths). Act on: isolation belongs in the station tools.
+     - Owner commands: one the owner types day to day that needs an argument on the common path,
+       or a daily loop that rebuilds everything on each change. Act on.
      - Data loss is always Act on, never Consider: a write path that can fail and leave the app
        showing or confirming data that a restart forgets (in-memory change kept after a failed
        save), or that can overwrite good data. -->

@@ -8,7 +8,7 @@ Owns comes from the ticket line "**Owns (may write):**": every `backticked` toke
 A token may be absolute: one under the repo's main checkout or any of its worktrees is made
 relative to it; one elsewhere (the station's tools repo, another repo) is not part of this repo
 and is ignored here. <repo> may be the main checkout or a worktree: the result is the same.
-A token starting with ! is an exclusion (`!src/lib/types.ts`): never owned, even inside an owned
+A token starting with ! is an exclusion (`!src/lib/types.src`): never owned, even inside an owned
 folder. An exclusion written in prose ("except `x`") is refused. In an empty repo (HEAD with no
 commit) the default <ref> is the ticket's **Branch:**.
 A token with * ? or [ is a glob (fnmatch, so * also crosses /). Any other token matches itself
@@ -66,27 +66,27 @@ def owned(path, patterns):
 
 
 def selftest():
-    owns, excl = owns_from_ticket("- **Owns (may write):** `src/api/`, `tests/api_*.py`, `README.md`")
-    assert owns == ["src/api", "tests/api_*.py", "README.md"] and excl == [], owns
-    o2, e2 = owns_from_ticket("- **Owns (may write):** `src/lib/`, `!src/lib/types.ts`")
-    assert o2 == ["src/lib"] and e2 == ["src/lib/types.ts"], (o2, e2)
+    owns, excl = owns_from_ticket("- **Owns (may write):** `src/api/`, `tests/api_*.src`, `README.md`")
+    assert owns == ["src/api", "tests/api_*.src", "README.md"] and excl == [], owns
+    o2, e2 = owns_from_ticket("- **Owns (may write):** `src/lib/`, `!src/lib/types.src`")
+    assert o2 == ["src/lib"] and e2 == ["src/lib/types.src"], (o2, e2)
     try:   # the real pilot line: prose exclusion must be refused, not read as owned
-        owns_from_ticket("- **Owns (may write):** `src/lib/tasks/**` (except `types.ts`)")
+        owns_from_ticket("- **Owns (may write):** `src/lib/tasks/**` (except `types.src`)")
         raise AssertionError("prose exclusion accepted")
     except SystemExit:
         pass
     assert branch_from_ticket("- **Branch:** `feat/0001-app` from base `abc`") == "feat/0001-app"
-    assert owned("src/api/routes.py", owns)
-    assert owned("tests/api_users.py", owns)
+    assert owned("src/api/routes.src", owns)
+    assert owned("tests/api_users.src", owns)
     assert owned("README.md", owns)
-    assert not owned("src/apix/x.py", owns)  # prefix must stop at a folder boundary
-    assert not owned("src/web/app.tsx", owns)
-    assert not owned("tests/web_test.py", owns)
+    assert not owned("src/apix/x.src", owns)  # prefix must stop at a folder boundary
+    assert not owned("src/web/app.src", owns)
+    assert not owned("tests/web_test.src", owns)
     abs_owns = relative_to_repo(["/r/app/", "/r/", "/k/stations/web/tools", "src/x"], "/r")
     assert abs_owns == ["app/", "*", "src/x"], abs_owns   # tools repo path dropped, root = all
-    assert owned("app/page.tsx", relative_to_repo(["/r/app"], "/r"))
+    assert owned("app/page.src", relative_to_repo(["/r/app"], "/r"))
     assert owned("README.md", relative_to_repo(["/r"], "/r"))
-    assert not owned("lib/x.ts", relative_to_repo(["/r/app", "/k/tools"], "/r"))
+    assert not owned("lib/x.src", relative_to_repo(["/r/app", "/k/tools"], "/r"))
     print("selftest ok")
 
 

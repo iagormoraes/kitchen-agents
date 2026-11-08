@@ -123,19 +123,19 @@ def selftest():
     open(os.path.join(home, "kitchen.md"), "w").write(f"- **Root:** `{repo}`\n")
     ticket = os.path.join(home, "orders", "0002-owner", "ticket.md")
     open(ticket, "w").write(f"- **Station:** owner\n- **Repo:** `{repo}`\n"
-                            "- **Owns (may write):** `src/lib/`, `!src/**/*.test.ts`\n")
+                            "- **Owns (may write):** `src/lib/`, `!**/*.test.*`\n")
     os.environ["KITCHENS"] = base
     ev = lambda p: {"tool_name": "Edit", "tool_input": {"file_path": os.path.join(repo, p)}, "cwd": repo}
     assert find_kitchen(os.path.join(repo, "src"))[0] == home
-    assert guard(ev("src/lib/store.ts"))["hookSpecificOutput"]["permissionDecision"] == "deny"
-    assert guard(ev("src/lib/store.test.ts")) is None          # tests are the sous-chef's
-    assert guard(ev("src/app/page.tsx")) is None               # not in the owner's Owns
-    assert guard({"tool_name": "Read", "tool_input": {"file_path": os.path.join(repo, "src/lib/a.ts")}}) is None
+    assert guard(ev("src/lib/store.src"))["hookSpecificOutput"]["permissionDecision"] == "deny"
+    assert guard(ev("src/lib/store.test.src")) is None          # tests are the sous-chef's
+    assert guard(ev("src/app/page.src")) is None               # not in the owner's Owns
+    assert guard({"tool_name": "Read", "tool_input": {"file_path": os.path.join(repo, "src/lib/a.src")}}) is None
     open(os.path.join(home, "orders", "0002-owner", "takeover"), "w").close()
-    assert guard(ev("src/lib/store.ts")) is None               # owner said "take over"
+    assert guard(ev("src/lib/store.src")) is None               # owner said "take over"
     os.remove(os.path.join(home, "orders", "0002-owner", "takeover"))
     open(os.path.join(home, "orders", "0002-owner", "plate.md"), "w").write("- **Status:** done\n")
-    assert guard(ev("src/lib/store.ts")) is None               # ticket finished
+    assert guard(ev("src/lib/store.src")) is None               # ticket finished
     # check: the real setup bug, a sibling repo offered as a station of another workspace's kitchen
     ws, other = os.path.join(t, "code", "acme"), os.path.join(t, "code", "billing-lib")
     k2 = os.path.join(t, "k2"); os.makedirs(k2)

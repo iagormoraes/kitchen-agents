@@ -13,11 +13,14 @@ the session-start brief). It holds the rules every step below relies on.
 From the order's folders, list every:
 
 - gate in `gates.md`,
-- question the taster found in `mise-en-place`,
+- question the taster found in `mise-en-place` (`$ORDERS/<id>/taster-*.md`),
 - fix round and its "Act on" findings,
 - row in a `plate.md` Decisions table that the owner overruled at the pass, or that a later row
   superseded,
-- owner correction during the pass.
+- owner correction during the pass,
+- for an owner ticket (`kitchen:line`): every `take over` row in its plate's Decisions table, and
+  each concept the owner got stuck on (the steps where they asked "explain" or "I'm stuck"). The
+  next owner ticket gives those concepts more depth.
 
 Print one line: `gates N · taster questions N · fix rounds N · owner corrections N`.
 
@@ -28,15 +31,15 @@ in this order:
 
 1. **A check** (a script, test, lint or hook that fails on the mistake). Prove it fails on this
    real case before adding it. Add a row to "Rule → what enforces it" in the kitchen RULES.md.
-2. **A grill checklist line** in `skills/grill/SKILL.md`, worded as the question that would have
+2. **A grill checklist line** in `$KITCHEN/skills/grill/SKILL.md`, worded as the question that would have
    caught it.
-3. **A template field** in `templates/` that forces the answer to be written down, or a
+3. **A template field** in `$KITCHEN/templates/` that forces the answer to be written down, or a
    **gotcha line** in the station's profile `$KITCHEN_HOME/stations/<name>/station.md` when only that station needs it.
 4. **A sentence** in an agent or skill. Last resort: text is the weakest guard.
 
 ## 3. Promote scenarios
 
-Each scenario in `orders/<id>/scenarios/` that proves lasting behavior: propose moving it to
+Each scenario in `$ORDERS/<id>/scenarios/` that proves lasting behavior: propose moving it to
 `$KITCHEN_HOME/stations/<station>/tools/<tool>/scenarios/`, renamed by what it proves. One-off probes stay in the order.
 
 ## 4. Propose, don't apply

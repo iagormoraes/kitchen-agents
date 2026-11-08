@@ -5,9 +5,9 @@ cook (an agent). A station owns its paths, its tools and its check, and delivers
 checked plate. Nobody supervises a station while it cooks. The owner stands at **the pass**:
 approves the order, tastes the plate, says when it goes out.
 
-This kit is the Claude Code plugin `kitchen`: its skills are `kitchen:grill`, `kitchen:menu`,
-`kitchen:mise-en-place`, `kitchen:expedite`, `kitchen:retro`; its agents are `kitchen:station`,
-`kitchen:taster`, `kitchen:reviewer`, plus `kitchen:setup`. A SessionStart hook of the plugin
+This kit is the Claude Code plugin `kitchen`: its skills are `kitchen:setup`, `kitchen:grill`,
+`kitchen:menu`, `kitchen:mise-en-place`, `kitchen:expedite`, `kitchen:line`, `kitchen:retro`; its
+agents are `kitchen:station`, `kitchen:taster`, `kitchen:reviewer`. A SessionStart hook of the plugin
 loads a short brief into every session of a project that has a kitchen home.
 
 ## Zero footprint: kitchens live outside the codebase
@@ -37,11 +37,31 @@ kitchen, and a project inside a workspace may have a kitchen of its own.
 The kitchen repo and the tools repos are local. Never add a remote unless the owner asks. Only the
 expediter commits in the kitchen repo; only the owning station commits in its tools repo.
 
+**The product never knows about the kitchen, not even as an idea.** Stations, orders, tickets,
+kitchens and their ports exist only in the kitchen home and the station tools. No product file,
+setting, name, label or argument exists because stations need it. When stations need isolation
+(their own copy of the app, their own ports, their own data), the station tools get it **from
+outside**: they run the product's own commands with ordinary overrides (an environment variable
+for a port, a different project or data folder name). The product just accepts ordinary settings,
+each with a default. Which overrides exist is decided once, in the spec's **Owner commands**
+(their defaults column); a station never adds one on its own. When a value has no override, the
+station tools isolate around it (their own copy or data folder) or the row becomes 👤.
+
+**Every path the kitchen writes is absolute** (`$ORDERS/…`, `$KITCHEN/…`, `$KITCHEN_HOME/…`). The
+expediter's and the agents' working folder is usually the owner's repo, so a relative path would
+put kitchen files in the codebase. Agents don't get the session-start brief: the expediter passes
+them every absolute path they need.
+
+**The owner's commands are the product's commands.** Every command the owner types day to day
+(start developing, run the tests, reset the data) needs no argument on the common path: every
+value has a default. The daily loop is fast (it reloads on change, no full rebuild per edit). A
+production-like run is a separate command, proven by a station, not the owner's daily loop.
+
 The names used below, all absolute and given by the session-start brief: `KITCHEN` = this kit's
 folder, `KITCHEN_HOME`, `ORDERS` = `$KITCHEN_HOME/orders`, `WORKTREES` = `$KITCHEN_HOME/worktrees`.
-`orders/<id>/` in this file means `$ORDERS/<id>/`. Tickets copy the absolute paths.
+Tickets and agent prompts carry these as absolute paths.
 
-- `kitchen.md` lists every station: `| Station | Repo | Profile |`.
+- `kitchen.md` lists every station: `| Station | Repo | Profile | Shared services it owns |`.
 - A station is one repo, or one module of one repo; never two repos. A feature across repos is one
   ticket per repo, and **a commit never spans repos**.
 - **One spec per feature**, in `$KITCHEN_HOME/specs/`, even when the feature spans repos. Numbers are
@@ -66,7 +86,7 @@ folder, `KITCHEN_HOME`, `ORDERS` = `$KITCHEN_HOME/orders`, `WORKTREES` = `$KITCH
 | 1. Plan | owner | | a plan, any shape |
 | 2. Grill | expediter + owner | `grill` | decisions, policies, out of scope, all settled |
 | 3. Spec | expediter | `menu` | `$KITCHEN_HOME/specs/NNNN-<slug>.md` |
-| 4. Tickets + dry run | expediter + taster | `mise-en-place` | `orders/<id>/ticket.md` per station, zero taster questions |
+| 4. Tickets + dry run | expediter + taster | `mise-en-place` | `$ORDERS/<id>/ticket.md` per station, zero taster questions |
 | 5. Approve | owner | | approves spec + ownership map together, asks for changes, or rejects |
 | 6. Cook | stations, in parallel | `expedite` | branches, `plate.md`, evidence |
 | 7. Review | reviewer | `expedite` | `verdict-<sha>.md` per station |
@@ -74,7 +94,8 @@ folder, `KITCHEN_HOME`, `ORDERS` = `$KITCHEN_HOME/orders`, `WORKTREES` = `$KITCH
 | 9. Retro | expediter | `retro` | each gate and owner correction becomes a grill question or a check |
 
 **Small work** (one station, a few lines: a bug fix, a constant, a copy edit): the expediter does it
-itself on `fix/<slug>`, runs the check, gets a verdict. No ticket, no grill.
+itself on `fix/<slug>`, in a worktree (never in the owner's folder), runs the check, gets a
+verdict written to `$ORDERS/<date>-<name>/verdict-<sha>.md`. No ticket, no grill.
 
 **After approval the order is frozen.** New owner input during cooking becomes the next order.
 It never reaches a station that is already cooking.
@@ -112,13 +133,13 @@ DRY is also the collision rule: each rule, contract and file has **one owner sta
 - **Runtime is shared, so it is assigned.** Each ticket gives its station its own port (and its own
   test database or data folder when the stack allows). A service everyone uses (a local DB, a
   backend) has one owner station: only it restarts or migrates it, and it logs each restart in its
-  report. A run that overlaps a restart is `blocked`, not `fail`, and is re-run.
+  plate. A run that overlaps a restart is `blocked`, not `fail`, and is re-run.
 - **A shared service runs the order's code before its consumers cook.** When the owner station's
   verdict is clean, it rebuilds the service from `order/<NNNN>` of its repo; consumer tickets are
   blocked until then. Each consumer's `result.json` records the service commit it tested against.
 - **Specs are read from the kitchen home**, never from a worktree: the ticket gives the absolute
   path, read-only. Only the expediter writes specs.
-- `python3 $KITCHEN/scripts/ownership-check.py orders/<id>/ticket.md <repo> <base>` fails when the
+- `python3 $KITCHEN/scripts/ownership-check.py $ORDERS/<id>/ticket.md <repo> <base>` fails when the
   branch touched anything outside `Owns`. It runs before review; a failure is an automatic round.
 - A shared contract (types, REST JSON, packet, DB shape) is frozen in the spec, or owned by one
   station whose ticket blocks the consumers. Consumers read it and never change it.
@@ -148,7 +169,7 @@ A behavior needs one of the first three levels. `build-only` is never a pass.
 | `build-only` | builds and lints. Not proof of behavior |
 | `blocked` | could not run, with the reason. Not a pass |
 
-Every claim in a report points at evidence. A test counts only with its exact command, its exit
+Every claim in a plate points at evidence. A test counts only with its exact command, its exit
 code and its output path. Each order leaves at least one test behind for the next change.
 Look, feel, phone, real payment: 👤 rows for the owner, with exact steps and a reference image
 or mock agreed in the grill.
@@ -161,12 +182,12 @@ the website call the server. Never call internal functions to cause an effect, n
 test-only endpoints, never write to the DB to fake a state.
 
 **The driver follows what the door is made of** (the default; the grill may choose another, for
-example curl plus headless Chrome when the owner allows no new dependency):
+example plain requests plus a headless browser when the owner allows no new dependency):
 
 | The user's door | Driver |
 | --- | --- |
-| DOM (web pages, webviews) | Playwright |
-| Canvas, WebGL, native graphics (a game) | a custom driver: real input events, named positions and probes, logs |
+| DOM (web pages, webviews) | a browser automation driver |
+| Canvas or native graphics (a game, a drawing tool) | a custom driver: real input events, named positions and probes, logs |
 | HTTP, packets (a server) | real requests, or the driver of the client that is its user |
 | Terminal (a CLI) | real commands in a shell |
 | Code (a library) | a small example program calling the public API |
@@ -181,7 +202,7 @@ $KITCHEN_HOME/stations/<station>/
     prove        starts what it needs from $REPO on $PORT, runs the tools the change needs,
                  merges one result.json
     README.md    each tool, its flags, what it cannot reach (those become 👤 rows)
-    <tool>/      each tool its own app with its own dependencies (e2e/ = Playwright, api/, …)
+    <tool>/      each tool its own app with its own dependencies (for example `e2e/` for the browser driver, `api/` for request checks)
       scenarios/ durable proofs, named by what they prove
 ```
 
@@ -205,8 +226,8 @@ details policy (the station picks, logs it in its plate, keeps the contract).
 | `check` | inside `$REPO`: install if missing, then lint, build and the repo's unit tests. Writes no evidence |
 | `prove` | creates the evidence folder first, then: port free, installs present, a clean build, start the app on `$PORT`, wait until ready, drive the scenarios, write `result.json`, stop the app |
 | Evidence | `$ORDERS/$ORDER/evidence/<station>-<YYYYMMDD-HHMMSS>/` (suffix `-2` on a clash), always with `result.json`, plus logs (`build.log`, `server.log`, the runner's own) and screenshots |
-| `result.json` | `{"commit", "buildTime", "status": "pass" \| "fail" \| "blocked", "checks": [{"id", "pass", "detail"}], "reason"?}`. Written on every exit. `blocked` or a failed build: `checks: []`, a `reason`, `buildTime: null` |
-| Check ids | unique, prefixed by the smoke row they prove (`S4.anual`); `--expect` texts become `expect.1`, `expect.2`… |
+| `result.json` | `{"commit", "buildTime", "status": "pass" \| "fail" \| "blocked", "checks": [{"id", "pass", "detail"}], "reason"?, "serviceCommit"?}` (`serviceCommit`: the shared service's commit it tested against, when it uses one). Written on every exit. `blocked` or a failed build: `checks: []`, a `reason`, `buildTime: null` |
+| Check ids | unique, prefixed by the smoke row they prove (`S4.renewal`); `--expect` texts become `expect.1`, `expect.2`… |
 | Waits for a signal | a selector, a log line, a response, a probe. A fixed sleep only where no signal exists, with the reason |
 | Safety | its own port, data and browser profile; kills only the processes it started (by PID) and their children, on any exit; never touches the owner's browser, dev server or accounts; read-only on shared services it doesn't own |
 | Selftest | `--selftest` runs the tool's own logic on fake inputs, with no app, server or network: `check` its combining rule (`0 0 0`→0, `0 1 0`→1, `0 2 0`→2); `prove` its merge (a failing check→1, all pass→0, unreadable result→2) |
@@ -216,7 +237,7 @@ rules with): one owner station, usually the one whose app it drives. Others run 
 it; a missing feature goes under "Orders for other stations". It lives in its owner's `tools/`,
 and `kitchen.md` lists it under Shared tools.
 
-**Scenarios:** an order's one-off scenarios stay in `orders/<id>/scenarios/`. A scenario that proves
+**Scenarios:** an order's one-off scenarios stay in `$ORDERS/<id>/scenarios/`. A scenario that proves
 lasting behavior is promoted to `stations/<station>/tools/<tool>/scenarios/`, renamed by what it proves
 (`bid-survives-reload`, not `0012-p3`). `retro` does the promotion.
 
@@ -240,19 +261,20 @@ A question whose answer can be observed by running something is not the owner's:
 ## Rounds
 
 - A verdict with "Act on" findings, or a failed ownership check, sends a **fresh** station run
-  with the ticket, the report and the verdict. Never resume an old run: resumed runs drop directives.
+  with the ticket, the plate and the verdict. Never resume an old run: resumed runs drop directives.
 - **At most 2 fix rounds per ticket.** Still failing after round 2 means the ticket or the spec is
   wrong: the expediter stops and brings the owner a re-spec, not a round 3.
-- Stuck station: no commit, report change or new evidence for 30 minutes (60 during a long build):
-  `$KITCHEN/scripts/watchdog.sh <repo> <id>` exits 2. Stop it, start a fresh run from ticket +
-  report, tell the owner.
+- Stuck station: no commit, plate change or new evidence for 30 minutes (60 during a long build):
+  `ORDERS=$ORDERS $KITCHEN/scripts/watchdog.sh <station worktree> <id>` exits 2. Stop it, start a
+  fresh run from ticket + plate, tell the owner.
 - Pausing: one `chore(wip): <what>` commit, `plate.md` with `Status: paused` and a resume point.
-  The next run treats ticket + report as true and never redoes verified work.
+  The next run treats ticket + plate as true and never redoes verified work.
 
 ## Big orders
 
-- **Count the whole job first.** An order over many items gets `orders/<spec>-scope.json`, one row
-  per item. Every progress update starts with the line `python3 $KITCHEN/scripts/scope.py` prints.
+- **Count the whole job first.** An order over many items gets `$ORDERS/<spec>-scope.json`, one row
+  per item. Only the expediter writes it, moving rows up from the plates (one writer per file).
+  Every progress update starts with the line `python3 $KITCHEN/scripts/scope.py` prints.
 - **Wide first, then deep.** Pass 1 brings every item to the new baseline; pass 2 polishes group by
   group. Running out of time leaves less polish, never half the items untouched.
 - **Merge per group** on the owner's go. No group waits days on a branch.
@@ -267,6 +289,8 @@ into a check and adds a row here.
 | Stations write only their `Owns` | `scripts/ownership-check.py` before review; `scripts/test-ownership-check.sh` proves it on a real repo with a worktree, run from either side |
 | The right kitchen loads in each folder | `scripts/test-session-start.sh` |
 | Every station's repo is under its kitchen's root | `scripts/kitchen.py check <kitchen>`, run by `kitchen:setup` before its commit; selftest case from the 2026-11-05 setup bug (a sibling repo offered as a station) |
+| Owner command defaults work on the owner's machine | grill line 15 checks each default is free; `expedite` runs each owner command once with no argument before the pass |
+| The product never knows about the kitchen; owner commands need no argument | `agents/taster.md` and the verdict's "Kitchen leak" and "Owner commands" lenses; the expediter reads every product diff for kitchen terms before the review |
 | Stations never ask the owner | `agents/station.md` has no `AskUserQuestion` tool |
 | The AI never writes the code an owner ticket gives the owner | the plugin's `PreToolUse` hook `scripts/kitchen.py guard` denies `Edit`/`Write`/`MultiEdit`/`NotebookEdit` on those paths until the plate is done or the owner says "take over"; `scripts/test-owner-guard.sh`. Writes through Bash: text only (`kitchen:line`) |
 | The station's hand-back file is `plate.md` | Claude Code refuses a subagent's write to a file named `report.md` ("Subagents should return findings as text"); tested 2026-11-04 |

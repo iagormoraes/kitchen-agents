@@ -16,6 +16,7 @@ commit=$(git -C "$repo" log -1 --format=%ct)
 newest=$(find "$orders/$order" -type f -exec stat -f %m {} + 2>/dev/null ||
          find "$orders/$order" -type f -exec stat -c %Y {} +)
 newest=$(echo "$newest" | sort -n | tail -1)
+commit=${commit:-0}   # an orphan worktree has no commit yet
 last=$(( commit > ${newest:-0} ? commit : ${newest:-0} ))
 idle=$(( (now - last) / 60 ))
 echo "$order: idle ${idle} min (limit ${limit})"
