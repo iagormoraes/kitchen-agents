@@ -5,7 +5,9 @@
     kitchen.py check <home>   exit 1 when a repo in <home>/kitchen.md lies outside its Root (every
                               station's repo must be under the root, or the hook never finds the kitchen)
     kitchen.py guard          PreToolUse hook: stdin is the hook JSON. Denies Edit/Write/MultiEdit/
-                              NotebookEdit on a path an active owner ticket owns (the owner cooks it)
+                              NotebookEdit (1) inside the kitchen plugin itself, from a session a
+                              kitchen covers (a project session never changes the plugin), and (2) on
+                              a path an active owner ticket owns (the owner cooks it)
     kitchen.py --selftest
 
 Kitchens live in ${KITCHENS:-~/.claude/kitchens}/<name>/kitchen.md, each with a line
@@ -24,6 +26,7 @@ import sys
 
 sys.dont_write_bytecode = True   # importing ownership-check.py must not leave a __pycache__ behind
 HERE = os.path.dirname(os.path.abspath(__file__))
+KIT = os.path.realpath(os.environ.get("KITCHEN_KIT") or os.path.dirname(HERE))   # the plugin folder
 _spec = importlib.util.spec_from_file_location("ownership_check", os.path.join(HERE, "ownership-check.py"))
 oc = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(oc)
@@ -96,8 +99,22 @@ def guard(event):
     path = ti.get("file_path") or ti.get("notebook_path")
     if not path:
         return None
-    path = os.path.join(event.get("cwd") or os.getcwd(), path)
-    k = find_kitchen(os.path.dirname(path)) or find_kitchen(event.get("cwd") or os.getcwd())
+    cwd = os.path.realpath(event.get("cwd") or os.getcwd())
+    path = os.path.realpath(os.path.join(cwd, path))
+    session_kitchen = find_kitchen(cwd)
+    under = lambda p, root: (p.rstrip("/") + "/").startswith(root.rstrip("/") + "/")
+    kit = os.path.realpath(KIT)
+    if session_kitchen and under(path, kit) and not under(cwd, kit):
+        return {"hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "deny",
+            "permissionDecisionReason": (
+                f"{path} is inside the kitchen plugin. A project session never changes the plugin: "
+                "put a lesson for this project in the House rules of "
+                f"{session_kitchen[0]}/kitchen.md, and a lesson for every project in "
+                f"{session_kitchen[0]}/retro/kit-proposals.md for the plugin's maintainer."),
+        }}
+    k = find_kitchen(os.path.dirname(path)) or session_kitchen
     if not k:
         return None
     order = owner_path(k[0], path)
@@ -136,6 +153,14 @@ def selftest():
     os.remove(os.path.join(home, "orders", "0002-owner", "takeover"))
     open(os.path.join(home, "orders", "0002-owner", "plate.md"), "w").write("- **Status:** done\n")
     assert guard(ev("src/lib/store.src")) is None               # ticket finished
+    # the plugin itself: denied from a session a kitchen covers, allowed for the plugin's maintainer
+    global KIT
+    kit_before, KIT = KIT, os.path.join(t, "plugin"); os.makedirs(os.path.join(KIT, "skills"))
+    kit_edit = lambda cwd: guard({"tool_name": "Edit", "tool_input": {"file_path": os.path.join(KIT, "skills", "x.md")}, "cwd": cwd})
+    assert kit_edit(repo)["hookSpecificOutput"]["permissionDecision"] == "deny"   # project session
+    assert kit_edit(KIT) is None                                                 # working on the plugin
+    assert kit_edit(os.path.join(t, "elsewhere")) is None                        # no kitchen covers it
+    KIT = kit_before
     # check: the real setup bug, a sibling repo offered as a station of another workspace's kitchen
     ws, other = os.path.join(t, "code", "acme"), os.path.join(t, "code", "billing-lib")
     k2 = os.path.join(t, "k2"); os.makedirs(k2)

@@ -18,7 +18,8 @@ back to `grill` for that one branch.
    every repo of the kitchen (and the station tools repos): no `feat/NNNN-*` or `order/NNNN` branch
    (`git -C <repo> branch --list 'feat/NNNN-*' 'order/NNNN'`). A kitchen set up again over old repos
    must not reuse a number its old branches hold.
-2. Fill every section. A section you cannot fill means the grill is not finished.
+2. Fill every section, and every **Spec field** in this kitchen's House rules
+   (`$KITCHEN_HOME/kitchen.md`). A section you cannot fill means the grill is not finished.
 3. **Greenfield only (`greenfield: yes`):** before the tickets, design the modules twice.
    - Run two fresh `Plan` subagents with the same brief, each told to design a structurally
      different shape. Each writes caller usage first (two or three real call sites), then the types.

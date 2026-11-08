@@ -23,6 +23,13 @@ expect allow Read  "$repo/src/lib/store.src"            # reading is always fine
 expect allow Edit  "$t/other/x.src" "$t/other"          # no kitchen covers it
 touch "$o/takeover";  expect allow Edit "$repo/src/lib/store.src"; rm "$o/takeover"
 printf -- '- **Status:** done\n' > "$o/plate.md"; expect allow Edit "$repo/src/lib/store.src"; rm "$o/plate.md"
+# the plugin itself: a project session (a kitchen covers its folder) never edits it
+mkdir -p "$t/plugin/skills"
+kit() { printf '{"tool_name":"Edit","tool_input":{"file_path":"%s/plugin/skills/x.md"},"cwd":"%s"}' "$t" "$1" |
+        KITCHEN_KIT="$t/plugin" KITCHENS="$t/kitchens" python3 -I "$kit/scripts/kitchen.py" guard; }
+case "$(kit "$repo")" in *'"deny"'*) ;; *) echo "FAIL: project session edited the plugin"; exit 1 ;; esac
+[ -z "$(kit "$t/plugin")" ] || { echo "FAIL: the plugin's own session was blocked"; exit 1; }
+[ -z "$(kit "$t/other")" ] || { echo "FAIL: a session with no kitchen was blocked"; exit 1; }
 # a broken hook input never blocks
 out=$(echo 'not json' | KITCHENS="$t/kitchens" python3 -I "$kit/scripts/kitchen.py" guard); [ -z "$out" ] || { echo "FAIL: bad input blocked"; exit 1; }
 echo ok

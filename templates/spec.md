@@ -41,7 +41,10 @@
 
 ## Contracts
 
-<Every shape shared between stations, frozen here, or owned by one station whose ticket blocks the others.>
+<Every shape shared between stations, frozen here, or owned by one station whose ticket blocks the others.
+An API contract lists, per call: the request body fields with types and limits, the response shape
+(a list's item shape too), and every error code with its body. A shared tool lists its frozen call
+shape: arguments and environment, exit codes, output format.>
 
 | Contract | Shape (or link) | Owner station | Consumers |
 | --- | --- | --- | --- |

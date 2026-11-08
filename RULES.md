@@ -27,7 +27,7 @@ kitchen, and a project inside a workspace may have a kitchen of its own.
 
 | In a kitchen (`$KITCHEN_HOME`) | Holds | Git |
 | --- | --- | --- |
-| `kitchen.md` | from `templates/kitchen.md`: root, repos, stations, shared tools | kitchen repo |
+| `kitchen.md` | from `templates/kitchen.md`: root, repos, stations, shared tools, House rules | kitchen repo |
 | `specs/` | every spec `NNNN-<slug>.md` and `specs/research/` | kitchen repo |
 | `stations/<name>/station.md` | the station's profile (from `templates/station.md`) | kitchen repo |
 | `stations/<name>/tools/` | the station's tools (see "Station tools") | **its own repo**, one per station, so stations commit tool changes in parallel without sharing an index |
@@ -36,6 +36,11 @@ kitchen, and a project inside a workspace may have a kitchen of its own.
 
 The kitchen repo and the tools repos are local. Never add a remote unless the owner asks. Only the
 expediter commits in the kitchen repo; only the owning station commits in its tools repo.
+
+**A kitchen never changes the plugin.** Its lessons go in its own home: **House rules** in
+`kitchen.md` (grill questions, spec fields, checks, leak-check allows), gotchas in station
+profiles, checks in station tools. A lesson every project would need is written to
+`$KITCHEN_HOME/retro/kit-proposals.md` for the plugin's maintainer, never applied by the session.
 
 **The product never knows about the kitchen, not even as an idea.** Stations, orders, tickets,
 kitchens and their ports exist only in the kitchen home and the station tools. No product file,
@@ -291,6 +296,8 @@ into a check and adds a row here.
 | Every station's repo is under its kitchen's root | `scripts/kitchen.py check <kitchen>`, run by `kitchen:setup` before its commit; selftest case from the 2026-11-05 setup bug (a sibling repo offered as a station) |
 | Owner command defaults work on the owner's machine | grill line 15 checks each default is free; `expedite` runs each owner command once with no argument before the pass |
 | The product never knows about the kitchen; owner commands need no argument | `agents/taster.md` and the verdict's "Kitchen leak" and "Owner commands" lenses; the expediter reads every product diff for kitchen terms before the review |
+| A project session never changes the plugin | the guard hook (`scripts/kitchen.py guard`) denies edits inside the plugin from any session a kitchen covers; `scripts/test-owner-guard.sh` |
+| No kitchen word in the product | `scripts/leak-check.py` on every branch before review; `scripts/test-leak-check.sh` |
 | Stations never ask the owner | `agents/station.md` has no `AskUserQuestion` tool |
 | The AI never writes the code an owner ticket gives the owner | the plugin's `PreToolUse` hook `scripts/kitchen.py guard` denies `Edit`/`Write`/`MultiEdit`/`NotebookEdit` on those paths until the plate is done or the owner says "take over"; `scripts/test-owner-guard.sh`. Writes through Bash: text only (`kitchen:line`) |
 | The station's hand-back file is `plate.md` | Claude Code refuses a subagent's write to a file named `report.md` ("Subagents should return findings as text"); tested 2026-11-04 |

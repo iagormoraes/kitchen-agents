@@ -70,9 +70,11 @@ evidence, not only summaries.
    blocked), save that text unchanged as `plate.md`, with one line on top saying so.
 2. `python3 $KITCHEN/scripts/ownership-check.py $ORDERS/<id>/ticket.md <repo> <base>`. Fail = a fix
    round with "revert or move the out-of-scope changes", no review needed yet.
-3. Read the product diff for kitchen terms (kitchen, station, order or ticket as concepts, the
-   orders or kitchen paths, an isolation port base). Any hit is a fix round before review: the
-   product never knows about the kitchen.
+3. **Leak check:** `python3 $KITCHEN/scripts/leak-check.py <station worktree> <base> [--allow <words
+   from House rules "Leak check allows">]`. A hit is a fix round before review: the product never
+   knows about the kitchen. Then run every **Check** in this kitchen's House rules. Then read the
+   diff yourself for what no word list catches (an isolation-only setting, "a later order" in a
+   comment).
 4. Review: `Agent` with `subagent_type: kitchen:reviewer`, giving it, all as **absolute** paths: the
    order id, the station worktree, branch and base sha, the ticket, the spec, the plate, `$KITCHEN`,
    and the verdict path to write (`$ORDERS/<id>/verdict-<sha>.md`); for a re-review, the previous

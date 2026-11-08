@@ -23,3 +23,13 @@
 | Tool | Owner station | Path |
 | --- | --- | --- |
 | <name> | <station> | `<absolute path>` |
+
+## House rules
+
+<This kitchen's own lessons, added by kitchen:retro on the owner's go. The session-start brief
+loads this file, so every order of this kitchen follows them. Never copied into the plugin.>
+
+- **Grill questions:** <one line each: the question that would have caught a past miss> or "none"
+- **Spec fields:** <one line each: what every spec of this kitchen must also write down> or "none"
+- **Checks:** <one line each: command (in a station's tools), what it fails on> or "none"
+- **Leak check allows:** <words that are this product's own domain, for example `ticket`> or "none"

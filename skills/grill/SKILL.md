@@ -51,7 +51,9 @@ always written as such ("after the build: `http://localhost:<port>`"), never as 
 
 ## 3. The checklist (every grill covers these)
 
-Each line comes from questions stations had to park in past orders. `retro` adds lines here.
+Each line comes from questions stations had to park in past orders. Also ask every **Grill
+question** in this kitchen's House rules (`$KITCHEN_HOME/kitchen.md`): `retro` adds those, per
+kitchen, never here.
 
 1. **Greenfield?** Does this order create a brand-new project? Yes = SOLID applies and the spec
    sketches modules and interfaces first. No = follow the existing patterns.
@@ -83,7 +85,10 @@ Each line comes from questions stations had to park in past orders. `retro` adds
    restart a service). Granted here = in the ticket; never a gate later.
 11. **Budget.** Time or build cycles per station, and what to do when it runs out.
 12. **Proof the owner keeps.** Which rows only the owner can taste (👤), with the steps.
-13. **Proof tools.** For each 🤖 row: which station tool proves it (station profile, "Tools").
+13. **Proof tools.** For each 🤖 row: which station tool proves it (station profile, "Tools"),
+    and **can the station observe the expected result through the door?** A fault the row
+    expects (a dependency down, a dropped write) needs a named way to cause it and to see it from
+    outside; an ordering claim says ordered by what. If it can't be observed, rewrite the row.
     No tool reaches it: building or extending the tool is the first ticket of that station.
     A new station: who is its user, what is the door, which driver (kitchen RULES.md "Station
     tools"), and may the tool add its dependency (for example a browser driver in the station's `tools/e2e/`)?
@@ -105,6 +110,10 @@ Each line comes from questions stations had to park in past orders. `retro` adds
     **Check every default on this machine** (a fact, not a question): each default port is free,
     each default folder is writable. A default that something else already uses is chosen again
     now. And a command whose port is taken stops with a clear message; it never starts half.
+
+16. **Untrusted input.** For every value taken from outside (a request field, a header, an upload,
+    a query): its maximum size, what happens above it, and exactly which derived value is stored
+    or logged (never the raw value by default).
 
 ## 4. Close
 

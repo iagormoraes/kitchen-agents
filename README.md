@@ -113,7 +113,8 @@ root wins, so a project inside a workspace can have its own kitchen.
 python3 $K/scripts/ownership-check.py $ORDERS/<id>/ticket.md <repo or worktree> <base sha>   # exit 1 = wrote outside Owns
 python3 $K/scripts/scope.py $ORDERS/<spec>-scope.json [-v]                                   # progress line for big orders
 ORDERS=<home>/orders $K/scripts/watchdog.sh <worktree> <id> [minutes]   # exit 2 = station stuck
-python3 $K/scripts/ownership-check.py --selftest; python3 $K/scripts/scope.py; sh $K/scripts/test-session-start.sh; sh $K/scripts/test-ownership-check.sh; sh $K/scripts/test-owner-guard.sh; python3 -I $K/scripts/kitchen.py --selftest   # and: python3 -I $K/scripts/kitchen.py check <kitchen>   # self-checks
+python3 $K/scripts/leak-check.py <worktree> <base sha> [--allow word,word]   # exit 1 = kitchen words in the product
+python3 $K/scripts/ownership-check.py --selftest; python3 $K/scripts/scope.py; sh $K/scripts/test-session-start.sh; sh $K/scripts/test-ownership-check.sh; sh $K/scripts/test-owner-guard.sh; sh $K/scripts/test-leak-check.sh; python3 -I $K/scripts/kitchen.py --selftest   # and: python3 -I $K/scripts/kitchen.py check <kitchen>   # self-checks
 ```
 
 ## License and credits
