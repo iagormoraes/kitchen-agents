@@ -90,7 +90,9 @@ override the review.>
      - Do not dismiss a security or data-loss finding without tracing it.
      - Kitchen leak: a product file, setting, name, label or argument that exists only because
        stations need it, or any kitchen term in product code (kitchen, station, order or ticket
-       as concepts, the orders or kitchen paths). Act on: isolation belongs in the station tools.
+       as concepts, the orders or kitchen paths), or a spec, decision, row or order id in a
+       comment, doc, test name or commit message. Act on, also when an earlier order wrote it:
+       isolation belongs in the station tools, and the product's text explains, never cites.
      - Owner commands: one the owner types day to day that needs an argument on the common path,
        or a daily loop that rebuilds everything on each change. Act on.
      - Data loss is always Act on, never Consider: a write path that can fail and leave the app

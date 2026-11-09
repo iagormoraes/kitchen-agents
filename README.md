@@ -27,8 +27,8 @@ flowchart TD
     end
     EXPEDITE --> S1 & S2
     S1 & S2 --> OWN["ownership check"]
-    OWN --> REVIEW{"kitchen:reviewer<br/>verdict clean?"}
-    REVIEW -- "Act on (max 2 fix rounds)" --> COOK
+    OWN --> REVIEW{"kitchen:reviewer + kitchen:adversary<br/>verdict clean, attacks held?"}
+    REVIEW -- "Act on or a proven attack (max 2 fix rounds)" --> COOK
     REVIEW -- "clean" --> PASS{{"The pass: the kitchen switches the owner's folder,<br/>the owner runs the dev command and tastes"}}
     PASS -- "approved" --> OUT["merge into main, station profiles updated"]
     PASS -- "changes" --> NEXT["next order"]
@@ -42,7 +42,7 @@ The rules are in [`RULES.md`](RULES.md). The flow, step by step:
 | Grill the owner until no question is left | `kitchen:grill` |
 | Write the spec | `kitchen:menu` |
 | Cut tickets, check ownership, dry-run with the taster | `kitchen:mise-en-place`, `kitchen:taster` |
-| Dispatch, watch, review, decide rounds, hand off | `kitchen:expedite`, `kitchen:station`, `kitchen:reviewer` |
+| Dispatch, watch, review, attack, decide rounds, hand off | `kitchen:expedite`, `kitchen:station`, `kitchen:reviewer`, `kitchen:adversary` |
 | Turn misses into checks | `kitchen:retro` |
 | **You cook a ticket yourself**, the AI as sous-chef: it points to the file and the concept, writes the test cases, tastes your work, never writes your code | `kitchen:line` |
 

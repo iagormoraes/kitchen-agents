@@ -7,7 +7,7 @@ approves the order, tastes the plate, says when it goes out.
 
 This kit is the Claude Code plugin `kitchen`: its skills are `kitchen:setup`, `kitchen:grill`,
 `kitchen:menu`, `kitchen:mise-en-place`, `kitchen:expedite`, `kitchen:line`, `kitchen:retro`; its
-agents are `kitchen:station`, `kitchen:taster`, `kitchen:reviewer`. A SessionStart hook of the plugin
+agents are `kitchen:station`, `kitchen:taster`, `kitchen:reviewer`, `kitchen:adversary`. A SessionStart hook of the plugin
 loads a short brief into every session of a project that has a kitchen home.
 
 ## Zero footprint: kitchens live outside the codebase
@@ -44,7 +44,8 @@ profiles, checks in station tools. A lesson every project would need is written 
 
 **The product never knows about the kitchen, not even as an idea.** Stations, orders, tickets,
 kitchens and their ports exist only in the kitchen home and the station tools. No product file,
-setting, name, label or argument exists because stations need it. When stations need isolation
+setting, name, label or argument exists because stations need it, and no comment, doc, test name
+or commit message cites a spec, decision, row, ticket or order (`spec C7`, `D9`, `order 0002`). When stations need isolation
 (their own copy of the app, their own ports, their own data), the station tools get it **from
 outside**: they run the product's own commands with ordinary overrides (an environment variable
 for a port, a different project or data folder name). The product just accepts ordinary settings,
@@ -83,6 +84,7 @@ Tickets and agent prompts carry these as absolute paths.
 | Station | a permanent profile `$KITCHEN_HOME/stations/<name>/station.md` (from `templates/station.md`) + one **fresh** `kitchen:station` run per ticket | builds, tests, documents, commits on its branch, reports | asks a question, writes outside its `Owns`, merges, pushes |
 | Taster | `kitchen:taster` | dry-runs a ticket before cooking: lists every question it would need to ask | writes anything |
 | Reviewer | `kitchen:reviewer` | reviews one branch against ticket and spec, writes the verdict | edits code |
+| Adversary | `kitchen:adversary` | attacks one branch through the door before merge, on its own worktree, port and data; reports only what a run proved | edits code, touches anything outside this machine |
 
 ## Flow of one order
 
@@ -94,7 +96,7 @@ Tickets and agent prompts carry these as absolute paths.
 | 4. Tickets + dry run | expediter + taster | `mise-en-place` | `$ORDERS/<id>/ticket.md` per station, zero taster questions |
 | 5. Approve | owner | | approves spec + ownership map together, asks for changes, or rejects |
 | 6. Cook | stations, in parallel | `expedite` | branches, `plate.md`, evidence |
-| 7. Review | reviewer | `expedite` | `verdict-<sha>.md` per station |
+| 7. Review and attack | reviewer, adversary | `expedite` | `verdict-<sha>.md`, and `attack-<sha>.md` when the ticket has an attack surface |
 | 8. Round or pass | expediter | `expedite` | a fix round (at most 2), or the hand-off: the expediter switches the owner's folder to the order branch, the owner runs the dev command and tastes |
 | 9. Retro | expediter | `retro` | each gate and owner correction becomes a grill question or a check |
 
@@ -297,7 +299,8 @@ into a check and adds a row here.
 | Owner command defaults work on the owner's machine | grill line 15 checks each default is free; `expedite` runs each owner command once with no argument before the pass |
 | The product never knows about the kitchen; owner commands need no argument | `agents/taster.md` and the verdict's "Kitchen leak" and "Owner commands" lenses; the expediter reads every product diff for kitchen terms before the review |
 | A project session never changes the plugin | the guard hook (`scripts/kitchen.py guard`) denies edits inside the plugin from any session a kitchen covers; `scripts/test-owner-guard.sh` |
-| No kitchen word in the product | `scripts/leak-check.py` on every branch before review; `scripts/test-leak-check.sh` |
+| Every change to the attack surface is attacked before merge | `kitchen:adversary` writes `attack-<sha>.md`; a proven finding is a fix round with a test that runs the attack |
+| No kitchen word or spec id in the product | `scripts/leak-check.py --spec` on every branch before review, and `--all` on the whole product before every pass (catches what earlier orders left); `scripts/test-leak-check.sh` |
 | Stations never ask the owner | `agents/station.md` has no `AskUserQuestion` tool |
 | The AI never writes the code an owner ticket gives the owner | the plugin's `PreToolUse` hook `scripts/kitchen.py guard` denies `Edit`/`Write`/`MultiEdit`/`NotebookEdit` on those paths until the plate is done or the owner says "take over"; `scripts/test-owner-guard.sh`. Writes through Bash: text only (`kitchen:line`) |
 | The station's hand-back file is `plate.md` | Claude Code refuses a subagent's write to a file named `report.md` ("Subagents should return findings as text"); tested 2026-11-04 |

@@ -57,6 +57,12 @@ REPO=<worktree> ORDERS=<orders path> ORDER=<order id> PORT=<port> <tools path>/p
 - **🤖 rows to run:** <ids from the spec smoke table, with their steps pasted>
 - **Known gotchas:** <stale build, cache, port, ordering>
 
+## Attack surface
+
+<The spec's Attack surface rows this ticket touches, copied word for word. Build each defense, and
+prove the "Never" column with a test that tries it. `kitchen:adversary` attacks the branch before
+merge. "None" when the spec's surface has no row here.>
+
 ## Policies
 
 <Copied word for word from the spec's Policies section.>

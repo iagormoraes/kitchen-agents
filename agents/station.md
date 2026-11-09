@@ -59,6 +59,10 @@ it (append-only: a wrong call gets a new row that supersedes it, never an edit).
   `$ORDERS/<id>/evidence/` (`ORDERS` = the ticket's absolute Orders path). Reach the strongest level you can: `e2e-verified`, `runtime-verified`,
   `test-verified`. `build-only` is not a pass.
 - Document as you go: the repo's docs or README for any behavior, command or config you added.
+  **Docs, comments, test names and commit messages are for a reader who has never seen the
+  kitchen.** Never cite a spec, a decision, a row, a ticket or an order (`spec C7`, `(D9)`,
+  `TestEachD9…`, `order 0002`): write what it means (`# Env: DB_HOST, DB_PORT`). The leak check
+  reads the spec's ids and fails on them.
 - Respect the **Timebox**. When it runs out, pause (below) and hand back what is verified.
 
 ## Before you hand back

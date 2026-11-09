@@ -70,8 +70,10 @@ evidence, not only summaries.
    blocked), save that text unchanged as `plate.md`, with one line on top saying so.
 2. `python3 $KITCHEN/scripts/ownership-check.py $ORDERS/<id>/ticket.md <repo> <base>`. Fail = a fix
    round with "revert or move the out-of-scope changes", no review needed yet.
-3. **Leak check:** `python3 $KITCHEN/scripts/leak-check.py <station worktree> <base> [--allow <words
-   from House rules "Leak check allows">]`. A hit is a fix round before review: the product never
+3. **Leak check:** `python3 $KITCHEN/scripts/leak-check.py <station worktree> <base> --spec <every
+   spec in $KITCHEN_HOME/specs/> [--allow <House rules "Leak check allows">] [--exclude <the owner's
+   own design docs>]`. With `--spec` it also finds the spec's ids (`C7`, `D9`, `S5`) in comments,
+   docs and names. A hit is a fix round before review: the product never
    knows about the kitchen. Then run every **Check** in this kitchen's House rules. Then read the
    diff yourself for what no word list catches (an isolation-only setting, "a later order" in a
    comment).
@@ -79,6 +81,13 @@ evidence, not only summaries.
    order id, the station worktree, branch and base sha, the ticket, the spec, the plate, `$KITCHEN`,
    and the verdict path to write (`$ORDERS/<id>/verdict-<sha>.md`); for a re-review, the previous
    verdict. Agents don't get the session-start brief: a path you don't pass, they can't resolve.
+   **Attack, in parallel with the review**, whenever the ticket's **Attack surface** isn't "none"
+   or the branch adds a dependency: make a detached worktree of the station's branch
+   (`git -C <repo> worktree add --detach $WORKTREES/<id>-attack/<repo name> <sha>`), then
+   `Agent` with `subagent_type: kitchen:adversary`, giving it, all absolute: the order id, that
+   worktree and the base sha, the ticket, the spec, the plate, `$KITCHEN`, a free port, a scratch
+   folder under `$ORDERS/<id>/evidence/`, and the report path (`$ORDERS/<id>/attack-<sha>.md`).
+   Remove the worktree after. A ticket with no surface skips it; say so in the pass.
 5. Merge the station branches of the order into `order/<NNNN>` **of their own repo** when their
    verdicts are clean (one order branch per repo touched; disjoint `Owns` means no conflicts; a
    conflict is an ownership bug: stop and tell the owner). Merge in a **temporary worktree**
@@ -93,8 +102,8 @@ evidence, not only summaries.
 
 | State | Action |
 | --- | --- |
-| Verdict clean, every 🤖 row passes at a verified level, ownership check passes | the pass |
-| "Act on" findings, fix round 1 or 2 | a **fresh** station run: ticket + plate + verdict. Only "Act on" goes back |
+| Verdict clean, attack report "held" (or no surface), every 🤖 row passes at a verified level, ownership check passes | the pass |
+| "Act on" findings or proven attack findings, fix round 1 or 2 | a **fresh** station run: ticket + plate + verdict + attack report. Only "Act on" and proven findings go back, each fixed with a test that runs the attack and fails on the old code. The re-review and a re-attack cover the new commit |
 | Still "Act on" after fix round 2 | stop. The ticket or spec is wrong. Bring the owner a re-spec proposal |
 | A 🤖 row only `build-only` or `blocked` | a fix round, unless the plate proves no tool can reach it: then it becomes a 👤 row |
 | "Consider" or "Noted" only | the pass. List them for the owner, don't cook them |
@@ -103,6 +112,12 @@ evidence, not only summaries.
 a branch that is checked out somewhere else, use a detached one:
 `git -C <repo> worktree add --detach $WORKTREES/<id>-check/<repo name> <branch or sha>`, and remove
 it after. If the worktree can't be created, stop: never fall back to the owner's folder.
+
+**Before the pass, scan the whole product, not just this order's changes:**
+`python3 $KITCHEN/scripts/leak-check.py <detached worktree of order/<NNNN>> --all --spec <every spec>
+[--allow …] [--exclude …]`. A diff only shows what this order changed; a leak an earlier order left
+is found here. Any hit, whoever wrote it, is removed as small work on `order/<NNNN>` before the
+pass, never filed as Consider.
 
 ## 5. Set the table: the kitchen switches the branch
 
@@ -151,7 +166,9 @@ Approve to merge into `<home branch>` in: <each repo touched>? (separate go for 
 
 ## 7. Out
 
-- **Approved:** in each repo, `switch` back to the home branch, squash-merge `order/<NNNN>` into it,
+- **Approved:** in each repo, `switch` back to the home branch, squash-merge `order/<NNNN>` into it
+  with a message that says what changed in the product, in the repo's own commit style. It never
+  names an order, a spec, a ticket or an id (`(order 0002)`, `C7`): the history is the product's,
   run the install step again, then push only on a second go. **Home branch with no commit yet**
   (empty repo): `git switch --orphan <home>`, `git checkout order/<NNNN> -- .`, then one commit:
   that commit starts the history. Merge each station's

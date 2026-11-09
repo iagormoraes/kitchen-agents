@@ -111,9 +111,14 @@ kitchen, never here.
     each default folder is writable. A default that something else already uses is chosen again
     now. And a command whose port is taken stops with a clear message; it never starts half.
 
-16. **Untrusted input.** For every value taken from outside (a request field, a header, an upload,
-    a query): its maximum size, what happens above it, and exactly which derived value is stored
-    or logged (never the raw value by default).
+16. **Untrusted input and the attack surface.** For every value taken from outside (a request
+    field, a header, an upload, a query): its maximum size, what happens above it, and exactly
+    which derived value is stored or logged (never the raw value by default). Then the rest of
+    the surface: who may call each entry point and how it's checked; every delete or overwrite
+    and what its target is built from (only values the server generated); every outbound call
+    and where its address comes from; secrets and personal data and where they may appear; each
+    new dependency. They go in the spec's **Attack surface**: `kitchen:adversary` attacks exactly
+    these.
 
 ## 4. Close
 

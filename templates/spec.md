@@ -39,6 +39,16 @@
 
 - <each nearby thing that will not be done>
 
+## Attack surface
+
+<From grill line 16. Every way in for outside data or callers, and what it can reach. The stations
+build the defenses; `kitchen:adversary` attacks each row through the door before merge. "None" only
+for a change with no outside input, no caller check, no stored write and no new dependency.>
+
+| Entry point | Input or caller | Limits and checks | Can reach | Never |
+| --- | --- | --- | --- | --- |
+| <a route, a form, an upload, a command> | <fields, headers, files; who may call> | <sizes, types, auth> | <tables, files, outbound calls> | <what must never happen: another owner's data, a delete outside its folder…> |
+
 ## Contracts
 
 <Every shape shared between stations, frozen here, or owned by one station whose ticket blocks the others.

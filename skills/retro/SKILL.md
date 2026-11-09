@@ -14,7 +14,8 @@ From the order's folders, list every:
 
 - gate in `gates.md`,
 - question the taster found in `mise-en-place` (`$ORDERS/<id>/taster-*.md`),
-- fix round and its "Act on" findings,
+- fix round and its "Act on" findings, and every proven finding in an `attack-*.md` (the earliest
+  catch is usually the grill's Attack surface, line 16),
 - row in a `plate.md` Decisions table that the owner overruled at the pass, or that a later row
   superseded,
 - owner correction during the pass,
