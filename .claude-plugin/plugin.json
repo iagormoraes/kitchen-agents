@@ -1,6 +1,6 @@
 {
   "name": "kitchen",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "A multi-agent kitchen: the expediter grills the owner, writes the spec and one ticket per station; stations cook in parallel on disjoint paths, prove their work through the user's door, and a reviewer judges each plate before the owner tastes it.",
   "author": {
     "name": "Iagor Moraes"

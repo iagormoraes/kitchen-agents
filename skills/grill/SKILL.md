@@ -1,6 +1,6 @@
 ---
 name: grill
-description: Step 2 of the kitchen. Grill the owner about a plan until every decision a station would need is settled, so no station ever asks a question while cooking. Use when the owner brings a plan, a feature, or says "grill me". Ends by handing to the menu skill.
+description: Step 2 of the kitchen. Grill the owner about a plan, one researched question at a time, until every decision a station would need is settled, so no station ever asks a question while cooking. Use when the owner brings a plan, a feature, or says "grill me". Ends by handing to the menu skill.
 ---
 
 Adapted from mattpocock/skills `grilling` (MIT) and pstack `in-your-own-words` / `figure-it-out` (MIT).
@@ -13,43 +13,68 @@ single question. Grill until then. There is no question cap.
 
 ## 0. Say it back
 
-Before the first round, tell the owner in your own words: the goal, the problem behind it, and the
-smallest change you expect to meet it. Fix any mismatch first.
+Before the first question, tell the owner in your own words: the goal, the problem behind it, and
+the smallest change you expect to meet it. Fix any mismatch first.
 
 ## 1. Sort every question
 
 | Kind | Who answers | How |
 | --- | --- | --- |
-| **Fact** (what the code, data or tools do today) | you | a fresh read-only subagent (`Explore`). Never ask the owner a fact |
-| **Experiment** (which of two ways works, how fast, does it fit) | you | run it, or a throwaway prototype. Bring the result, not the question |
-| **Decision** (product, design, taste, priority, risk) | the owner | ask, with your recommended answer |
+| **Fact** (what the code, data, docs or tools say today) | you | read it: a fresh read-only subagent (`Explore`) for the codebase, the primary documentation for a tool or standard. Never ask the owner a fact |
+| **Experiment** (which of two ways works, how fast, does it fit) | you | run it, or a throwaway prototype in your scratch space. Bring the result, not the question |
+| **Decision** (product, design, taste, priority, risk) | the owner | ask it, one at a time (§3), with options from research (§2) |
 
-Don't block on a running fact or experiment: only the questions that depend on it wait.
+## 2. Research before you ask
 
-## 2. Ask in rounds over a design tree
+The options of a decision come from evidence, never from memory or a guess. Before you ask a
+decision, gather what its options rest on:
 
-Every decision branches into the decisions that hang off it. The **frontier** is every decision
-whose prerequisites are settled. Ask the whole frontier in one round, numbered, each with your
-recommendation, worded so "yes" accepts it:
+- **The codebase:** what exists, the patterns in use, what a choice would touch (`file:line`).
+- **Primary sources:** the official documentation, standard or specification of every tool,
+  format or protocol involved (its URL and section). Not a blog, not memory.
+- **The owner's own material:** their design docs, earlier specs, the kitchen's House rules.
+- **A run:** when two options can be compared by trying them, try them, and bring the numbers.
+
+Then:
+
+- **Only evidenced options.** Each option says what it is, what it costs or risks, and the source
+  that backs it. An option you can't source is dropped, or researched first.
+- **Evidence that leaves one sane option is not a question.** State it as settled, with its
+  source ("Settled by evidence: X, because <source>"), and move on. The owner can still overrule.
+- **Say what you couldn't verify,** in one line, instead of filling the gap.
+- **Research ahead.** While the owner answers one question, research the next ones in the
+  background, so they never wait on you.
+
+When the owner challenges an option ("you're guessing", "you're copying the old system"), go back
+to the sources and come back with the question rebuilt, not defended.
+
+## 3. Ask one question at a time
+
+Every decision branches into the decisions that hang off it. Ask **one decision per message**:
+the most upstream one still open (the one whose answer reshapes the most others), never one that
+depends on a question still unanswered.
 
 ```
-❓ **Q1** - **<title>**: <question, with the options>
+**Q<n> of ~<estimated total>: <title>**
 
-➡️ <your recommended answer>
+<why it matters here, one or two lines>
+
+| Option | What it means | Trade-off | Evidence |
+| --- | --- | --- | --- |
+| **A** (recommended) | … | … | `<file:line>` · <doc URL §> · <run result> |
+| **B** | … | … | … |
+
+➡️ **A**, because <the evidence that favors it>. Reply A, B, or your own answer.
 ```
 
-A question that depends on another question still open in this round belongs to a later round.
-Settled answers move the frontier outward. Recompute it and ask again.
+- After each answer: one line `Recorded: <the decision>`, then the next question, in the same
+  message. Update the estimated total as the tree grows or shrinks.
+- **Faster, only when the owner asks** ("take your defaults for the rest of the UI"): list those
+  remaining decisions with their recommendations in one message, for one yes or for corrections.
+- **Mark what doesn't exist yet.** A URL, a command or a screen that exists only after cooking is
+  always written as such ("after the build: `http://localhost:<port>`"), never as if it were live.
 
-**One at a time, when the owner asks.** If the owner asks for one question at a time, keep it so
-for the rest of the grill: one decision per message. Plain confirmations of your own
-recommendations can still go together ("Q5 to Q8 take my defaults: yes?"), so the grill doesn't
-turn into dozens of one-word turns.
-
-**Mark what doesn't exist yet.** A URL, a command or a screen that exists only after cooking is
-always written as such ("after the build: `http://localhost:<port>`"), never as if it were live.
-
-## 3. The checklist (every grill covers these)
+## 4. The checklist (every grill covers these)
 
 Each line comes from questions stations had to park in past orders. Also ask every **Grill
 question** in this kitchen's House rules (`$KITCHEN_HOME/kitchen.md`): `retro` adds those, per
@@ -120,9 +145,9 @@ kitchen, never here.
     new dependency. They go in the spec's **Attack surface**: `kitchen:adversary` attacks exactly
     these.
 
-## 4. Close
+## 5. Close
 
-The grill is done when the frontier is empty and every checklist line has an answer. Show the
-owner one summary: **decisions**, **policies** (tie-breaks + defaults), **out of scope**,
+The grill is done when no decision is left open and every checklist line has an answer. Show the
+owner one summary: **decisions** (each with the source it rests on), **policies** (tie-breaks + defaults), **out of scope**,
 **stations and ownership**, **owner commands** (marked "after the build"). Do not act until the
 owner confirms. Then run the `menu` skill.
