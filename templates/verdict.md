@@ -93,6 +93,9 @@ override the review.>
        as concepts, the orders or kitchen paths), or a spec, decision, row or order id in a
        comment, doc, test name or commit message. Act on, also when an earlier order wrote it:
        isolation belongs in the station tools, and the product's text explains, never cites.
+     - Owner resources: a destructive step (in the product's scripts or the station's tools) that
+       could act on a name in kitchen.md Owner resources, including through a fallback default or
+       a setting that names the wrong variable. Act on: it is the owner's data.
      - Owner commands: one the owner types day to day that needs an argument on the common path,
        or a daily loop that rebuilds everything on each change. Act on.
      - Data loss is always Act on, never Consider: a write path that can fail and leave the app

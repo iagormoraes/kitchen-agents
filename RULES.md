@@ -236,7 +236,7 @@ details policy (the station picks, logs it in its plate, keeps the contract).
 | `result.json` | `{"commit", "buildTime", "status": "pass" \| "fail" \| "blocked", "checks": [{"id", "pass", "detail"}], "reason"?, "serviceCommit"?}` (`serviceCommit`: the shared service's commit it tested against, when it uses one). Written on every exit. `blocked` or a failed build: `checks: []`, a `reason`, `buildTime: null` |
 | Check ids | unique, prefixed by the smoke row they prove (`S4.renewal`); `--expect` texts become `expect.1`, `expect.2`… |
 | Waits for a signal | a selector, a log line, a response, a probe. A fixed sleep only where no signal exists, with the reason |
-| Safety | its own port, data and browser profile; kills only the processes it started (by PID) and their children, on any exit; never touches the owner's browser, dev server or accounts; read-only on shared services it doesn't own |
+| Safety | its own port, data and browser profile; kills only the processes it started (by PID) and their children, on any exit; never touches the owner's browser, dev server or accounts; read-only on shared services it doesn't own. **Its destructive steps (remove, wipe, reset, drop) act only on names it created itself and refuse every name in `kitchen.md` Owner resources, even when a setting or a fallback points at one; its `--selftest` proves that refusal** |
 | Selftest | `--selftest` runs the tool's own logic on fake inputs, with no app, server or network: `check` its combining rule (`0 0 0`→0, `0 1 0`→1, `0 2 0`→2); `prove` its merge (a failing check→1, all pass→0, unreadable result→2) |
 
 **Shared tools** (one driver several stations use, like a game driver the server station plays
@@ -272,8 +272,10 @@ A question whose answer can be observed by running something is not the owner's:
 - **At most 2 fix rounds per ticket.** Still failing after round 2 means the ticket or the spec is
   wrong: the expediter stops and brings the owner a re-spec, not a round 3.
 - Stuck station: no commit, plate change or new evidence for 30 minutes (60 during a long build):
-  `ORDERS=$ORDERS $KITCHEN/scripts/watchdog.sh <station worktree> <id>` exits 2. Stop it, start a
-  fresh run from ticket + plate, tell the owner.
+  `ORDERS=$ORDERS $KITCHEN/scripts/watchdog.sh <station worktree> <id>` exits 2. The plugin's
+  monitor runs it every 5 minutes in interactive sessions and wakes the expediter; after a restart
+  the session-start brief lists the stations still cooking. Stop it, start a fresh run from ticket +
+  plate, tell the owner.
 - Pausing: one `chore(wip): <what>` commit, `plate.md` with `Status: paused` and a resume point.
   The next run treats ticket + plate as true and never redoes verified work.
 
@@ -289,18 +291,20 @@ A question whose answer can be observed by running something is not the owner's:
 ## Rule → what enforces it
 
 Prefer a check over a sentence. When the owner corrects the same mistake twice, `retro` turns it
-into a check and adds a row here.
+into a check in this kitchen's House rules (never here: a kitchen never changes the plugin); a
+lesson every project needs goes to `$KITCHEN_HOME/retro/kit-proposals.md` for the maintainer.
 
 | Rule | Enforced by |
 | --- | --- |
 | Stations write only their `Owns` | `scripts/ownership-check.py` before review; `scripts/test-ownership-check.sh` proves it on a real repo with a worktree, run from either side |
 | The right kitchen loads in each folder | `scripts/test-session-start.sh` |
 | Every station's repo is under its kitchen's root | `scripts/kitchen.py check <kitchen>`, run by `kitchen:setup` before its commit; selftest case from the 2026-11-05 setup bug (a sibling repo offered as a station) |
+| The kitchen never destroys the owner's resources | `kitchen.md` Owner resources; the guard hook (`scripts/kitchen.py guard`) refuses destructive commands naming them; each station tool's `--selftest` proves its own refusal (a hook can't see inside a script); `scripts/test-owner-guard.sh` |
 | Owner command defaults work on the owner's machine | grill line 15 checks each default is free; `expedite` runs each owner command once with no argument before the pass |
 | The product never knows about the kitchen; owner commands need no argument | `agents/taster.md` and the verdict's "Kitchen leak" and "Owner commands" lenses; the expediter reads every product diff for kitchen terms before the review |
 | A project session never changes the plugin | the guard hook (`scripts/kitchen.py guard`) denies edits inside the plugin from any session a kitchen covers; `scripts/test-owner-guard.sh` |
-| Every change to the attack surface is attacked before merge | `kitchen:adversary` writes `attack-<sha>.md`; a proven finding is a fix round with a test that runs the attack |
-| No kitchen word or spec id in the product | `scripts/leak-check.py --spec` on every branch before review, and `--all` on the whole product before every pass (catches what earlier orders left); `scripts/test-leak-check.sh` |
+| Every change to the attack surface is attacked before merge | `kitchen:adversary` writes `attack-<sha>.md`; a proven finding is a fix round with a test that runs the attack. Replayed blind on 4 real bugs a reviewer had caught: found 3 (2026-11-08); the miss, a two-step stored-input delete, became an attack class |
+| No kitchen word or spec id in the product | `scripts/leak-check.py --spec`: by the station before hand-back, by the expediter on every branch before review, `--all` on the whole product before every pass (catches what earlier orders left), `--message` on the squash commit message; `scripts/test-leak-check.sh` |
 | Stations never ask the owner | `agents/station.md` has no `AskUserQuestion` tool |
 | The AI never writes the code an owner ticket gives the owner | the plugin's `PreToolUse` hook `scripts/kitchen.py guard` denies `Edit`/`Write`/`MultiEdit`/`NotebookEdit` on those paths until the plate is done or the owner says "take over"; `scripts/test-owner-guard.sh`. Writes through Bash: text only (`kitchen:line`) |
 | The station's hand-back file is `plate.md` | Claude Code refuses a subagent's write to a file named `report.md` ("Subagents should return findings as text"); tested 2026-11-04 |
@@ -312,7 +316,7 @@ into a check and adds a row here.
 | Tickets need no questions | taster dry run in `mise-en-place`, zero questions to dispatch |
 | Taster never edits | `agents/taster.md` tools: Read, Grep, Glob only |
 | Reviewer never edits code | text only (it needs Bash to re-run checks and Write for the verdict) |
-| A stalled station is replaced | `scripts/watchdog.sh` |
+| A stalled station is replaced | `scripts/watchdog.sh`, run every 5 minutes by the plugin monitor (`monitors/monitors.json` → `scripts/watch-orders.sh`); interrupted stations listed at session start; `scripts/test-watch-orders.sh`, `scripts/test-session-start.sh` |
 | A station tool can't pass while broken | each tool's `--selftest` |
 | Tools prove through the user's door | tools live outside the repo (they can only reach the URL, port or command); reviewer checks scenarios |
 

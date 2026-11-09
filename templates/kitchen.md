@@ -24,9 +24,20 @@
 | --- | --- | --- |
 | <name> | <station> | `<absolute path>` |
 
+## Owner resources
+
+<Everything the owner's own runs use, from the spec's Owner commands defaults: project or stack
+names, data folders, databases, ports. Globs allowed. The guard hook refuses any destructive command
+that names one of these, and every station tool's destructive step must refuse them too. The kitchen
+never removes, wipes or resets them.>
+
+- **Names:** `<the owner's project or stack name>`, `<its data volumes, for example name_*>`
+- **Folders:** `<the owner's data folders>`
+- **Ports:** `<the owner's default ports>`
+
 ## House rules
 
-<This kitchen's own lessons, added by kitchen:retro on the owner's go. The session-start brief
+<This kitchen's own lessons, added by kitchen:retro (lessons that only add safety apply themselves; the rest on the owner's go). The session-start brief
 loads this file, so every order of this kitchen follows them. Never copied into the plugin.>
 
 - **Grill questions:** <one line each: the question that would have caught a past miss> or "none"

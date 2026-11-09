@@ -39,3 +39,14 @@ INFO
 awk '/^## Principles/{on=1; print; next} on && /^## /{exit} on' "$kit/RULES.md"
 echo
 cat "$best/kitchen.md"
+
+# Stations still cooking: after a restart or a compaction the expediter may not know them anymore.
+cooking=$(python3 -I "$kit/scripts/kitchen.py" cooking "$best" | head -5)
+if [ -n "$cooking" ]; then
+  echo
+  echo "## Stations still cooking (a restart or compaction may have stopped them)"
+  echo "$cooking" | while IFS='	' read -r id wt; do
+    idle=$(ORDERS="$best/orders" sh "$kit/scripts/watchdog.sh" "$wt" "$id" 2>/dev/null)
+    echo "- $idle. Over the limit: start a fresh run from its ticket and plate (expedite §2)."
+  done
+fi

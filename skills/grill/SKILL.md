@@ -135,6 +135,8 @@ kitchen, never here.
     **Check every default on this machine** (a fact, not a question): each default port is free,
     each default folder is writable. A default that something else already uses is chosen again
     now. And a command whose port is taken stops with a clear message; it never starts half.
+    Every default name, folder and port also goes into `kitchen.md` **Owner resources**: the
+    kitchen never destroys them.
 
 16. **Untrusted input and the attack surface.** For every value taken from outside (a request
     field, a header, an upload, a query): its maximum size, what happens above it, and exactly

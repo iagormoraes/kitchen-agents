@@ -38,6 +38,9 @@ mise-en-place makes its ticket block every consumer.>
 - **Ready when:** <a check that proves it is usable, not just that a process answers>
 - **Test data:** <seed command or fixture path, from an empty state>
 - **Stop:** kill only the process you started (its PID), never by name.
+- **Never the owner's resources:** every destructive step (remove, wipe, reset) uses only names this
+  station's tools created, never a name from `kitchen.md` Owner resources, even through a fallback
+  default; `--selftest` proves the refusal.
 - **Isolation from outside:** the station runs the product's own commands with ordinary
   overrides (a port variable, its own project or data folder name). It never needs the product to
   know about stations.

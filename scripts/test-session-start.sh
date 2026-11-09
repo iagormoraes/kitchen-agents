@@ -18,4 +18,11 @@ expect "$t/ws/web"        "marker SHOP"        # inner project with its own kitc
 expect "$t/ws-x"          "no kitchen covers"  # a sibling sharing a prefix is not inside
 expect "$t/other"         "no kitchen covers"  # unrelated folder
 expect "$t/ws"            "## Principles"      # the brief carries the principles
+# a station still cooking is listed at session start (restart or compaction)
+mkdir -p "$t/kitchens/game/orders/0004-web" "$t/wtc"; git -C "$t/wtc" init -q
+printf -- '- **Worktree:** `%s`: your only working directory\n' "$t/wtc" > "$t/kitchens/game/orders/0004-web/ticket.md"
+expect "$t/ws"            "0004-web: idle"
+printf -- '- **Status:** done\n' > "$t/kitchens/game/orders/0004-web/plate.md"
+out=$(CLAUDE_PROJECT_DIR=$t/ws CLAUDE_PLUGIN_ROOT=$kit KITCHENS=$t/kitchens sh "$kit/scripts/session-start.sh")
+case "$out" in *"0004-web"*) echo "FAIL: a finished station was listed"; exit 1 ;; esac
 echo ok

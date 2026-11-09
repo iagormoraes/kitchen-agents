@@ -3,6 +3,7 @@
 
     python3 leak-check.py <repo or worktree> <base sha> [<ref>] [--spec <spec.md>]... [--allow w,w] [--exclude glob]...
     python3 leak-check.py <repo or worktree> --all [<ref>] [--spec <spec.md>]... [--allow w,w] [--exclude glob]...
+    python3 leak-check.py --message <file> [--spec <spec.md>]... [--allow w,w]
     python3 leak-check.py --selftest
 
 Reads only the lines the branch adds (`git diff <base>..<ref>`), skipping lock files; `--all` reads
@@ -14,6 +15,8 @@ decision ids ("spec C4", "decision D12"). `--spec` adds every id a spec defines 
 inside a placeholder (`TS_D1`). `--exclude` skips paths (the owner's own design docs). `--allow` drops words that are the product's own domain
 (a help desk's "ticket", a train app's "station"); the kitchen's House rules list them.
 Exit 0 clean, 1 hits (each printed as file:line: word: text), 2 git failed.
+`--message` checks a commit message file before it is used (the squash commit's history is the
+product's: no "(order 0002)", no spec id).
 Prose that names no kitchen word ("as a later order will do") is the reviewer's to catch.
 """
 import fnmatch
@@ -68,6 +71,11 @@ def scan(diff, allow=(), ids=(), exclude=()):
             line += 1
 
 
+def message_as_diff(text):
+    lines = text.splitlines() or [""]
+    return "+++ b/COMMIT_MESSAGE\n@@ -0,0 +1,%d @@\n" % len(lines) + "\n".join("+" + l for l in lines)
+
+
 def selftest():
     diff = "\n".join([
         "diff --git a/data/README.md b/data/README.md", "+++ b/data/README.md", "@@ -0,0 +1,3 @@",
@@ -97,13 +105,17 @@ def selftest():
                       "+S50 is a size, C70 too"])                          # longer numbers: not ids
     assert [(n, t) for _, n, t, _ in scan(real, ids=ids)] == [(1, "spec id"), (2, "spec id")]
     assert list(scan(real, ids=ids, exclude=("edge/*",))) == []
+    # commit messages: the real squash message of a pilot order, and a clean one
+    bad = "feat: all tag types, full events, management, reports and the display SDK (order 0002)"
+    assert [t for _, _, t, _ in scan(message_as_diff(bad))] == ["order id"]
+    assert list(scan(message_as_diff("feat: all tag types, full events and the display SDK"))) == []
     print("selftest ok")
 
 
 def main(argv):
     if argv[1:] == ["--selftest"]:
         return selftest()
-    args, allow, specs, exclude, whole = [], set(), [], [], False
+    args, allow, specs, exclude, whole, message = [], set(), [], [], False, None
     i = 1
     while i < len(argv):
         a = argv[i]
@@ -118,8 +130,21 @@ def main(argv):
             i += 2
         elif a == "--all":
             whole = True; i += 1
+        elif a == "--message" and i + 1 < len(argv):
+            message = argv[i + 1]; i += 2
         else:
             args.append(a); i += 1
+    if message is not None:
+        try:
+            ids = spec_ids(open(p).read() for p in specs)
+            diff = message_as_diff(open(message).read())
+        except OSError as e:
+            print(e, file=sys.stderr); return 2
+        hits = list(scan(diff, allow, ids))
+        for _, n, term, text in hits:
+            print(f"commit message line {n}: {term}: {text[:120]}")
+        print(f"leak check: {len(hits)} kitchen word(s) in the commit message")
+        return 1 if hits else 0
     if whole and len(args) in (1, 2):
         repo, base, ref = args[0], EMPTY_TREE, (args[1] if len(args) == 2 else "HEAD")
     elif not whole and len(args) in (2, 3):

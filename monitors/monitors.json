@@ -1,0 +1,8 @@
+[
+  {
+    "name": "kitchen-watch",
+    "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/watch-orders.sh \"${CLAUDE_PLUGIN_ROOT}\"",
+    "description": "Kitchen: a cooking station has stalled",
+    "when": "on-skill-invoke:expedite"
+  }
+]

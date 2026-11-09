@@ -25,6 +25,10 @@
      - Paths and names: `..`, encoded `..`, absolute paths, odd separators, very long names, in any
        value that becomes a file, folder, key or URL; deletes or overwrites built from a value the
        caller can edit.
+     - Two steps (stored input): for every delete, overwrite or outbound call, trace each value
+       its target is built from back to where it was stored. If an earlier request can set or edit
+       that stored value (a URL, a path, a name field), attack in two steps: first store the
+       hostile value through that request, then trigger the action that trusts it.
      - Outbound: any value that makes the server fetch, redirect or connect (internal addresses,
        loopback, metadata addresses, other schemes); open redirects.
      - Who the caller is: missing, expired, forged or another user's credentials or session;

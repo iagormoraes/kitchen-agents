@@ -2,12 +2,16 @@
 """Kitchen lookup and the owner guard, shared by the plugin's hooks.
 
     kitchen.py find <dir>     print "<kitchen home>\\t<root>" of the kitchen covering <dir>; exit 1 if none
+    kitchen.py cooking <home> print "<order id>\t<worktree>" for each station still cooking: its ticket
+                              names a Worktree that exists and its plate isn't done
     kitchen.py check <home>   exit 1 when a repo in <home>/kitchen.md lies outside its Root (every
                               station's repo must be under the root, or the hook never finds the kitchen)
     kitchen.py guard          PreToolUse hook: stdin is the hook JSON. Denies Edit/Write/MultiEdit/
                               NotebookEdit (1) inside the kitchen plugin itself, from a session a
                               kitchen covers (a project session never changes the plugin), and (2) on
-                              a path an active owner ticket owns (the owner cooks it)
+                              a path an active owner ticket owns (the owner cooks it). For Bash, it
+                              denies a destructive command that names one of the kitchen's Owner
+                              resources (kitchen.md "## Owner resources")
     kitchen.py --selftest
 
 Kitchens live in ${KITCHENS:-~/.claude/kitchens}/<name>/kitchen.md, each with a line
@@ -17,6 +21,7 @@ its plate says `**Status:** done`, and it stops guarding when `$ORDERS/<id>/take
 owner said "take over"). Its Owns are read by ownership-check.py's parser: relative paths are
 under the ticket's `**Repo:**`, `!path` tokens are exclusions (the test files the sous-chef writes).
 """
+import fnmatch
 import glob
 import importlib.util
 import json
@@ -58,6 +63,51 @@ def repos_outside_root(home):
     return [p for p in paths if not (os.path.realpath(p).rstrip("/") + "/").startswith(root + "/")]
 
 
+DESTRUCTIVE = re.compile(
+    r"(\brm\s+-[a-zA-Z]*[rRf]|\brmdir\b|\bdown\b[^;&|]*(\s-v\b|--volumes)|\bvolumes?\s+(rm|remove|prune)\b"
+    r"|\bprune\b|\bdrop\s+(database|schema|table)\b|\btruncate\b|\bflushall\b|\bflushdb\b|\bdestroy\b)",
+    re.I)
+
+
+def owner_resources(home):
+    """The globs in kitchen.md's "## Owner resources" section: names, folders, ports the owner's own runs use."""
+    path = os.path.join(home, "kitchen.md")
+    if not os.path.exists(path):
+        return []
+    text = open(path).read()
+    if "## Owner resources" not in text:
+        return []
+    section = text.split("## Owner resources", 1)[1].split("\n## ", 1)[0]
+    return [t for t in re.findall(r"`([^`]+)`", section) if not t.startswith("<")]
+
+
+def names_owner_resource(command, globs):
+    """The first owner resource a command names, word by word (also the value of NAME=value and k:v)."""
+    words = []
+    for w in re.split(r"[\s;&|()]+", command):
+        w = w.strip("'\"")
+        words += [w] + re.split(r"[=:]", w)
+    for g in globs:
+        for w in words:
+            if w and (fnmatch.fnmatch(w, g) or fnmatch.fnmatch(os.path.expanduser(w), os.path.expanduser(g))):
+                return g
+    return None
+
+
+def cooking(home):
+    """(order id, worktree) for each ticket whose Worktree exists and whose plate isn't done."""
+    out = []
+    for t in sorted(glob.glob(os.path.join(home, "orders", "*", "ticket.md"))):
+        order = os.path.dirname(t)
+        plate = os.path.join(order, "plate.md")
+        if os.path.exists(plate) and re.search(r"\*\*Status:\*\*\s*done", open(plate).read()):
+            continue
+        m = re.search(r"^- \*\*Worktree:\*\* `([^`<]+)`", open(t).read(), re.M)
+        if m and os.path.isdir(m.group(1)):
+            out.append((os.path.basename(order), m.group(1)))
+    return out
+
+
 def active_owner_tickets(home):
     """Yield (order id, repo root, owned patterns, excluded patterns) for each owner ticket cooking."""
     for t in sorted(glob.glob(os.path.join(home, "orders", "*", "ticket.md"))):
@@ -93,6 +143,8 @@ def owner_path(home, path):
 
 
 def guard(event):
+    if event.get("tool_name") == "Bash":
+        return guard_command(event)
     if event.get("tool_name") not in ("Edit", "Write", "MultiEdit", "NotebookEdit"):
         return None
     ti = event.get("tool_input") or {}
@@ -130,6 +182,26 @@ def guard(event):
     }}
 
 
+def guard_command(event):
+    command = (event.get("tool_input") or {}).get("command") or ""
+    if not DESTRUCTIVE.search(command):
+        return None
+    k = find_kitchen(os.path.realpath(event.get("cwd") or os.getcwd()))
+    if not k:
+        return None
+    hit = names_owner_resource(command, owner_resources(k[0]))
+    if not hit:
+        return None
+    return {"hookSpecificOutput": {
+        "hookEventName": "PreToolUse",
+        "permissionDecision": "deny",
+        "permissionDecisionReason": (
+            f"This command would destroy `{hit}`, one of the owner's resources ({k[0]}/kitchen.md, "
+            "Owner resources). The kitchen never removes, wipes or resets what the owner's own runs use. "
+            "Use a name only the station or check created, or ask the owner."),
+    }}
+
+
 def selftest():
     import tempfile
     t = tempfile.mkdtemp()
@@ -161,6 +233,26 @@ def selftest():
     assert kit_edit(KIT) is None                                                 # working on the plugin
     assert kit_edit(os.path.join(t, "elsewhere")) is None                        # no kitchen covers it
     KIT = kit_before
+    # Bash: a destructive command naming an owner resource is denied; the station's own names pass
+    open(os.path.join(home, "kitchen.md"), "a").write(
+        "\n## Owner resources\n\n- **Names:** `adserver-neo`, `adserver-neo_*`\n- **Folders:** `~/data/owner-app`\n")
+    sh = lambda c: guard({"tool_name": "Bash", "tool_input": {"command": c}, "cwd": repo})
+    denied = lambda c: (sh(c) or {}).get("hookSpecificOutput", {}).get("permissionDecision") == "deny"
+    assert denied("docker compose -p adserver-neo down -v")                    # the G1 class
+    assert denied("COMPOSE_PROJECT_NAME=adserver-neo deploy/dev.sh down --volumes")
+    assert denied("docker volume rm adserver-neo_postgres-data")
+    assert denied("rm -rf ~/data/owner-app")
+    assert not denied("docker compose -p adserver-neo-ops-0003 down -v")       # a station's own stack
+    assert not denied("docker compose -p adserver-neo ps")                     # not destructive
+    assert not denied("rm -rf /tmp/scratch/adserver-neo-check")                # not an owner name
+    # cooking: a ticket with a live worktree and no done plate is cooking; a done plate is not
+    wt = os.path.join(t, "wt-0003"); os.makedirs(wt)
+    o3 = os.path.join(home, "orders", "0003-api"); os.makedirs(o3)
+    open(os.path.join(o3, "ticket.md"), "w").write(f"- **Worktree:** `{wt}`: your only working directory\n")
+    assert cooking(home) == [("0003-api", wt)], cooking(home)
+    open(os.path.join(o3, "plate.md"), "w").write("- **Status:** done\n")
+    assert cooking(home) == []
+    os.remove(os.path.join(o3, "plate.md"))
     # check: the real setup bug, a sibling repo offered as a station of another workspace's kitchen
     ws, other = os.path.join(t, "code", "acme"), os.path.join(t, "code", "billing-lib")
     k2 = os.path.join(t, "k2"); os.makedirs(k2)
@@ -182,6 +274,10 @@ def main(argv):
         if not k:
             return 1
         print(f"{k[0]}\t{k[1]}")
+        return 0
+    if len(argv) == 3 and argv[1] == "cooking":
+        for order, wt in cooking(argv[2]):
+            print(f"{order}\t{wt}")
         return 0
     if len(argv) == 3 and argv[1] == "check":
         bad = repos_outside_root(argv[2])

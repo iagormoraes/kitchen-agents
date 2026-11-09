@@ -30,6 +30,14 @@ kit() { printf '{"tool_name":"Edit","tool_input":{"file_path":"%s/plugin/skills/
 case "$(kit "$repo")" in *'"deny"'*) ;; *) echo "FAIL: project session edited the plugin"; exit 1 ;; esac
 [ -z "$(kit "$t/plugin")" ] || { echo "FAIL: the plugin's own session was blocked"; exit 1; }
 [ -z "$(kit "$t/other")" ] || { echo "FAIL: a session with no kitchen was blocked"; exit 1; }
+# destructive shell commands against the owner's resources (kitchen.md "## Owner resources")
+printf '\n## Owner resources\n\n- **Names:** `app-dev`, `app-dev_*`\n' >> "$home/kitchen.md"
+sh() { printf '{"tool_name":"Bash","tool_input":{"command":"%s"},"cwd":"%s"}' "$1" "$repo" |
+       KITCHENS="$t/kitchens" python3 -I "$kit/scripts/kitchen.py" guard; }
+case "$(sh 'compose -p app-dev down -v')" in *'"deny"'*) ;; *) echo "FAIL: owner stack wipe allowed"; exit 1 ;; esac
+case "$(sh 'volume rm app-dev_db-data')" in *'"deny"'*) ;; *) echo "FAIL: owner volume removal allowed"; exit 1 ;; esac
+[ -z "$(sh 'compose -p app-dev-api-0003 down -v')" ] || { echo "FAIL: a station could not clean its own stack"; exit 1; }
+[ -z "$(sh 'compose -p app-dev ps')" ] || { echo "FAIL: a read-only command was blocked"; exit 1; }
 # a broken hook input never blocks
 out=$(echo 'not json' | KITCHENS="$t/kitchens" python3 -I "$kit/scripts/kitchen.py" guard); [ -z "$out" ] || { echo "FAIL: bad input blocked"; exit 1; }
 echo ok

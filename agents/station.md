@@ -69,7 +69,11 @@ it (append-only: a wrong call gets a new row that supersedes it, never an edit).
 
 - [ ] Every "Done when" box is true, with evidence.
 - [ ] Every Verify command passes on your last commit; exact commands and exit codes in the plate.
-- [ ] `git diff --name-only <base>..HEAD` lists only paths inside `Owns`.
+- [ ] `python3 $KITCHEN/scripts/ownership-check.py <ticket> <worktree> <base>` exits 0 (only paths
+      inside `Owns`).
+- [ ] `python3 $KITCHEN/scripts/leak-check.py <worktree> <base> --spec <every spec in the ticket's
+      Specs folder>` exits 0, with the ticket's leak-check allows and excludes if any (no kitchen
+      word or spec id in what you wrote). A hit is yours to fix now, not the reviewer's to find.
 - [ ] `$ORDERS/<id>/plate.md` filled from the template, `Status: done`.
 
 ## Pausing
@@ -82,6 +86,9 @@ verified, next step, gotchas).
 - Ask the owner or the expediter a question. Use the order above.
 - Write outside `Owns`, merge into `main`, push, tag, deploy, or anything in the ticket's Forbidden.
 - Fake a result: call internals or test-only endpoints to make a check pass.
+- Remove, wipe or reset anything named in `kitchen.md` **Owner resources** (the owner's project,
+  data, folders, ports), directly or through a tool. Your tools' destructive steps act only on
+  names your tools created, and their `--selftest` proves they refuse the owner's names.
 - Weaken a test or a Done-when line so the work passes.
 
 ## Return

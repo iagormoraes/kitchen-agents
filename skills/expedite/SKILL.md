@@ -55,9 +55,15 @@ evidence, not only summaries.
 
 ## 2. Watch
 
-- Every 30 minutes per cooking station: `ORDERS=$ORDERS $KITCHEN/scripts/watchdog.sh <station
-  worktree> <id>` (the worktree, where its commits are). Exit 2 = stop it, start a fresh run on the
-  same ticket (its plate holds the resume point), tell the owner.
+- **The clock is the plugin's monitor** (`kitchen-watch`, started the first time this skill runs,
+  interactive sessions only). It checks every cooking station every 5 minutes and wakes you with
+  one line when one is idle past its limit. Act on that line: stop that station, start a fresh run
+  on the same ticket (its plate and branch hold the resume point), tell the owner. In a headless
+  session there is no monitor: you are already waiting in the turn, so check each station yourself
+  with `ORDERS=$ORDERS $KITCHEN/scripts/watchdog.sh <station worktree> <id>` (exit 2 = stalled).
+- **After a restart or a compaction** the session-start brief lists the stations still cooking,
+  with their idle minutes. One past its limit gets a fresh run the same way; one under it is left to
+  finish.
 - Retry by cause: smaller scope after a context limit; same ticket after a dropped run. After two
   failed retries, drop the ticket and tell the owner why.
 - Never forward new owner input to a cooking station. Write it down as the next order.
@@ -132,10 +138,17 @@ every branch move is yours. For each repo touched, in the owner's main checkout:
    differs from the home branch (the project's own install command).
 4. Tell the owner, in the pass message, that the folder is now on the order branch.
 
-Before the pass message, **start each owner command yourself, once, with no argument**, in a
-detached worktree of `order/<NNNN>` (never the owner's folder): it must answer on its defaults on
-this machine, then stop it. The stations always ran on their own ports, so this is the first run on
-the owner's defaults; a default that is taken is a fix round, not the owner's surprise.
+Before the pass message, **check each owner command on its defaults, leaving the owner's machine
+exactly as you found it.** First look: is anything already using the defaults (a port held, the
+owner's project or data folder present, from `kitchen.md` Owner resources)?
+
+- **In use by the owner's own run:** don't start, stop or reset anything. Only check that what
+  holds the defaults is the owner's run and that it answers. Say so in the pass.
+- **Taken by something else:** a fix round (choose new defaults), not the owner's surprise.
+- **Free:** start each owner command once, with no argument, from a detached worktree of
+  `order/<NNNN>` (never the owner's folder). Check it answers, then stop only the processes you
+  started. Never remove data it created (no volume, data folder or database removal): the owner's
+  next run may use it.
 
 The worktrees stay until the out step, so a fix round can still cook while the owner tastes.
 
@@ -168,7 +181,9 @@ Approve to merge into `<home branch>` in: <each repo touched>? (separate go for 
 
 - **Approved:** in each repo, `switch` back to the home branch, squash-merge `order/<NNNN>` into it
   with a message that says what changed in the product, in the repo's own commit style. It never
-  names an order, a spec, a ticket or an id (`(order 0002)`, `C7`): the history is the product's,
+  names an order, a spec, a ticket or an id (`(order 0002)`, `C7`): the history is the product's.
+  Write it to `$ORDERS/<id>/commit-msg`, check it with `python3 $KITCHEN/scripts/leak-check.py
+  --message $ORDERS/<id>/commit-msg --spec <every spec>`, and commit with `git commit -F` that file,
   run the install step again, then push only on a second go. **Home branch with no commit yet**
   (empty repo): `git switch --orphan <home>`, `git checkout order/<NNNN> -- .`, then one commit:
   that commit starts the history. Merge each station's
@@ -176,7 +191,7 @@ Approve to merge into `<home branch>` in: <each repo touched>? (separate go for 
   `Status: implemented` and `Reviewed: <sha>, verdict clean`. Apply the plate's **Profile updates**
   to `$KITCHEN_HOME/stations/<name>/station.md` (they are facts: its tools, run command, gotchas,
   what it cannot reach), so the next ticket starts from a true profile. Commit both in the kitchen
-  repo.
+  repo. If the spec added or changed an owner default, update `kitchen.md` Owner resources too.
 - **Changes asked or rejected:** `switch` each repo back to its home branch and run the install
   step, so the folder is as the owner left it. A **rejected** order also deletes its worktrees and
   its `feat/<id>-*` and `order/<NNNN>` branches, in the product repo and the tools repos. Changes become the next order (or a fix round, when
@@ -185,5 +200,6 @@ Approve to merge into `<home branch>` in: <each repo touched>? (separate go for 
 Then remove each station's worktree (`git -C <repo> worktree remove <folder>`). Once the squash
 commit is on the home branch and its tree equals `order/<NNNN>`'s (`git diff --quiet <home> order/<NNNN>`),
 delete `order/<NNNN>` and every `feat/<id>-*` branch of the order in the product repo
-(`git branch -D`): the product keeps only its own history, never kitchen branches. Then run the
-`retro` skill.
+(`git branch -D`): the product keeps only its own history, never kitchen branches.
+`git -C <repo> branch --list 'feat/*' 'order/*'` must then print nothing for this order's id. Then
+run the `retro` skill.

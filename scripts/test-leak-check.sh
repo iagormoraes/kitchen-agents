@@ -21,5 +21,11 @@ set +e; $chk "$t" "$base3" HEAD --spec "$t.spec" >/dev/null 2>&1; got=$?; set -e
 set +e; $chk "$t" --all HEAD --spec "$t.spec" --allow station >/dev/null 2>&1; got=$?; set -e; [ "$got" = 1 ] || { echo "FAIL: --all missed the earlier (C7)"; exit 1; }
 set +e; $chk "$t" --all HEAD --spec "$t.spec" --allow station --exclude 'env.src' >/dev/null 2>&1; got=$?; set -e; [ "$got" = 0 ] || { echo "FAIL: --exclude did not skip"; exit 1; }
 rm -f "$t.spec"
+# the squash commit message (a real pilot message) and a clean one
+printf 'feat: walking skeleton end to end (order 0001)\n' > "$t.msg"
+set +e; $chk --message "$t.msg" >/dev/null 2>&1; got=$?; set -e; [ "$got" = 1 ] || { echo "FAIL: (order 0001) in a message passed"; exit 1; }
+printf 'feat: walking skeleton end to end\n' > "$t.msg"
+set +e; $chk --message "$t.msg" >/dev/null 2>&1; got=$?; set -e; [ "$got" = 0 ] || { echo "FAIL: a clean message failed"; exit 1; }
+rm -f "$t.msg"
 set +e; $chk "$t" deadbeef HEAD >/dev/null 2>&1; got=$?; set -e; [ "$got" = 2 ] || { echo "FAIL: bad base gave $got, want 2"; exit 1; }
 echo ok

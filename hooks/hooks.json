@@ -1,5 +1,5 @@
 {
-  "description": "Loads the kitchen into sessions of projects that have a kitchen home, and keeps the AI's edits off the code an owner ticket gives to the owner.",
+  "description": "Loads the kitchen into sessions of projects that have a kitchen home, keeps the AI's edits off the code an owner ticket gives to the owner and off the plugin, and refuses destructive commands against the owner's own resources.",
   "hooks": {
     "SessionStart": [
       {
@@ -13,7 +13,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash",
         "hooks": [
           {
             "type": "command",

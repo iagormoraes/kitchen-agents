@@ -12,6 +12,7 @@
 - **Kitchen:** `<absolute path of the kitchen kit>` (its `RULES.md` is your contract)
 - **Port:** `<n>` for any server you start. **Shared services:** <name: owner station, and whether you may restart it (only its owner may)>
 - **Spec:** `<absolute path in $KITCHEN_HOME/specs/>` (read-only)
+- **Specs folder:** `<absolute path of $KITCHEN_HOME/specs/>` (every spec, for the leak check) · **Leak check:** `<--allow and --exclude from House rules, or "none">`
 - **Greenfield:** yes | no
 - **Blocked by:** <order ids, or "none">
 
