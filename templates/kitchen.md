@@ -20,9 +20,12 @@
 
 ## Shared tools
 
-| Tool | Owner station | Path |
+<Drivers several stations run. Each lives in the e2e suite of the repo it drives; only its owner
+station edits it.>
+
+| Driver | Owner station | Path |
 | --- | --- | --- |
-| <name> | <station> | `<absolute path>` |
+| <game driver> | <station> | `<absolute repo path>/e2e/driver/` |
 
 ## Owner resources
 

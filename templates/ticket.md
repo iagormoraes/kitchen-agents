@@ -15,6 +15,7 @@
 - **Specs folder:** `<absolute path of $KITCHEN_HOME/specs/>` (every spec, for the leak check) · **Leak check:** `<--allow and --exclude from House rules, or "none">`
 - **Greenfield:** yes | no
 - **Blocked by:** <order ids, or "none">
+- **Base:** `<home branch, or the handoff branch this order stacks on>` (from `handoff.py base`)
 
 ## Goal
 
@@ -51,11 +52,12 @@ files; it writes the test cases (excluded from Owns with `!`, for example `!<the
 
 ```bash
 REPO=<worktree> ORDERS=<orders path> ORDER=<order id> PORT=<port> <tools path>/check
-REPO=<worktree> ORDERS=<orders path> ORDER=<order id> PORT=<port> <tools path>/prove --expect "<text>" <scenario>
+REPO=<worktree> ORDERS=<orders path> ORDER=<order id> PORT=<port> <tools path>/prove --row <smoke row>=<scenario>
 <any other exact command proving a criterion, every argument filled>
 ```
 
-- **🤖 rows to run:** <ids from the spec smoke table, with their steps pasted>
+- **🤖 rows to run:** <ids from the spec smoke table, with their steps pasted; each e2e row with
+  the scenario that proves it, whose file is in Owns (`e2e/scenarios/<behavior>.*`)>
 - **Known gotchas:** <stale build, cache, port, ordering>
 
 ## Attack surface
@@ -90,7 +92,7 @@ verified. Never keep going past it silently.>
 
 ## Forbidden
 
-- Writing outside Owns. Push, merge into `main`, any commit on `main`, release tags, deploy.
+- Writing outside Owns. Push, merge into `main`, any commit on `main`, pull requests, release tags, deploy.
 - Wiping or restoring a database. Anything outside this machine.
 - Calling internals or test-only endpoints to fake a result a check should observe.
 - <order-specific bans>

@@ -30,7 +30,7 @@ flowchart TD
     OWN --> REVIEW{"kitchen:reviewer + kitchen:adversary<br/>verdict clean, attacks held?"}
     REVIEW -- "Act on or a proven attack (max 2 fix rounds)" --> COOK
     REVIEW -- "clean" --> PASS{{"The pass: the kitchen switches the owner's folder,<br/>the owner runs the dev command and tastes"}}
-    PASS -- "approved" --> OUT["merge into main, station profiles updated"]
+    PASS -- "approved" --> OUT["one handoff branch per repo<br/>(your project pushes or opens the PR)"]
     PASS -- "changes" --> NEXT["next order"]
     OUT --> RETRO["kitchen:retro<br/>every miss becomes a check"]
 ```
@@ -89,7 +89,7 @@ The plugin's session-start hook sees no kitchen covers the folder, and `kitchen:
 outside the codebase. It reads the folder, asks one round of questions (kitchen name, stations,
 ports), and writes only to `~/.claude/kitchens/<name>/`. No repo, `CLAUDE.md` or `.claude/` file is
 touched. Then the grill starts: grill → spec → tickets with the taster dry run → your approval →
-stations cook → review → the pass.
+stations cook → review → the pass → one handoff branch per repo, which your project ships its own way.
 
 One machine holds many kitchens, one per workspace or project:
 
@@ -99,7 +99,7 @@ One machine holds many kitchens, one per workspace or project:
     kitchen.md                  root, repos, stations, shared tools
     specs/                      one spec per feature, even across repos
     stations/<name>/station.md  profile
-    stations/<name>/tools/      check, prove, e2e/ … (its own git repo)
+    stations/<name>/tools/      check, prove: the harness (its own git repo)
     orders/  worktrees/
   shop/                         ← Root: ~/code/shop (a single project)
 ```
@@ -114,8 +114,28 @@ python3 $K/scripts/ownership-check.py $ORDERS/<id>/ticket.md <repo or worktree> 
 python3 $K/scripts/scope.py $ORDERS/<spec>-scope.json [-v]                                   # progress line for big orders
 ORDERS=<home>/orders $K/scripts/watchdog.sh <worktree> <id> [minutes]   # exit 2 = station stuck
 python3 $K/scripts/leak-check.py <worktree> <base sha> [--allow word,word]   # exit 1 = kitchen words in the product
-python3 $K/scripts/ownership-check.py --selftest; python3 $K/scripts/scope.py; sh $K/scripts/test-session-start.sh; sh $K/scripts/test-ownership-check.sh; sh $K/scripts/test-owner-guard.sh; sh $K/scripts/test-leak-check.sh; sh $K/scripts/test-watch-orders.sh; python3 -I $K/scripts/kitchen.py --selftest   # and: python3 -I $K/scripts/kitchen.py check <kitchen>   # self-checks
+python3 $K/scripts/door-check.py <worktree>                                   # exit 1 = the e2e suite reaches past the door
+python3 $K/scripts/handoff.py base <repo> <home> $ORDERS <ticket>...          # the base a new order cooks from; exit 3 = wait
+python3 $K/scripts/ownership-check.py --selftest; python3 $K/scripts/scope.py; sh $K/scripts/test-session-start.sh; sh $K/scripts/test-ownership-check.sh; sh $K/scripts/test-owner-guard.sh; sh $K/scripts/test-leak-check.sh; sh $K/scripts/test-watch-orders.sh; python3 -I $K/scripts/door-check.py --selftest; python3 -I $K/scripts/handoff.py --selftest; python3 -I $K/scripts/kitchen.py --selftest   # and: python3 -I $K/scripts/kitchen.py check <kitchen>   # self-checks
 ```
+
+## Benchmark
+
+`evals/` holds a `claude plugin eval` suite. Each case builds a small workspace with a kitchen
+(`evals/_lib/kitchen.sh`) and scores one behavior, with and without the plugin:
+
+| Case | Scores |
+| --- | --- |
+| `out-hands-off-branch` | on approval: one product-named handoff branch and summary; no push, no merge into `main` |
+| `stack-on-open-handoff` | a new order overlapping an unmerged handoff cooks on top of it |
+| `door-wall-catches-backdoor` | a scenario importing the product's code goes back to the station |
+| `leak-check-order-number-path` | a scenario named after the order goes back to the station |
+
+```bash
+claude plugin eval $K --scaffold --allow-tools Bash Write Edit --concurrency 4 --no-publish
+```
+
+It runs real Claude sessions on your credential (16 runs by default). `--case <name>` runs one.
 
 ## License and credits
 

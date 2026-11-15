@@ -29,7 +29,11 @@ together).
   session's folder, so a session opened in that repo would never load this kitchen. It gets its
   own kitchen, or the owner moves the root up to a folder that holds both.
 - For each repo, with a fresh read-only `Explore` subagent: stack, build, lint and test commands, how
-  it runs locally, its user and door (kitchen RULES.md "Station tools"), local services it needs.
+  it runs locally, its user and door (kitchen RULES.md "Station tools"), local services it needs,
+  and its **e2e suite** if it has one (an `e2e/` folder, a browser-test config, an e2e script in its
+  manifest): the command, and whether it keeps the suite contract. No suite yet: the station
+  profile says so under "Cannot reach", and its first ticket builds one. Setup writes nothing in a
+  repo, not even a suite.
 
 ## 3. One decision round with the owner
 

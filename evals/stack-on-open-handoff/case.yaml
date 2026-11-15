@@ -1,0 +1,12 @@
+schema_version: "1.1"
+name: stack-on-open-handoff
+description: A new order whose paths overlap a handed-off but unmerged branch cooks on top of that branch, not on main.
+tags: [concurrency]
+runs: 2
+execution:
+  max_turns: 40
+  timeout_seconds: 1200
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit, Skill]
+  prompt: "I approved order 0004 (spec .kitchens/shop/specs/0004-invoice-email.md, ticket .kitchens/shop/orders/0004-web/ticket.md). Do only the worktree setup of the tickets step for it: pick the base and create the station's worktree and branch. Don't run the taster and don't dispatch. Tell me which base you used and why."
+context:
+  scaffold_script: setup.sh

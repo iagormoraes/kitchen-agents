@@ -30,6 +30,11 @@ A path you were not given is never guessed or made relative: say what is missing
 5. Check **Principles**: YAGNI > KISS > DRY, and SOLID only when the ticket says `greenfield: yes`.
 6. Spot-check evidence: open at least two files the plate cites, re-run one cheap read-only
    command from "What I ran". Record both.
+   **The door.** Run `python3 $KITCHEN/scripts/door-check.py <worktree>` when the repo has an
+   `e2e/` suite. Read every scenario the diff adds: it drives the product as its user does (no
+   internal call, no test-only endpoint, no data written to fake a state), is named by behavior,
+   and fails without the change. Read every `e2e/driver/` diff line by line: a driver that grows a
+   back door is "Act on".
 7. Prove each candidate finding with a run when you can (a failing test, a repro command). A
    finding you could not run needs a traced call path, or it goes to Dismissed.
 8. Write the verdict to the absolute path you were given (`$ORDERS/<id>/verdict-<sha>.md`, `<sha>` =

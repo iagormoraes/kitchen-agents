@@ -27,5 +27,12 @@ set +e; $chk --message "$t.msg" >/dev/null 2>&1; got=$?; set -e; [ "$got" = 1 ] 
 printf 'feat: walking skeleton end to end\n' > "$t.msg"
 set +e; $chk --message "$t.msg" >/dev/null 2>&1; got=$?; set -e; [ "$got" = 0 ] || { echo "FAIL: a clean message failed"; exit 1; }
 rm -f "$t.msg"
+# a new file named by order (the v1 scenarios) fails with the spec; a behavior name passes
+mkdir -p "$t.k"; printf '| S1 | x |\n' > "$t.k/0063-mining.md"
+base4=$(git rev-parse HEAD); mkdir -p e2e/scenarios; echo ok > e2e/scenarios/0063-p4b-board.mjs; git add .; git commit -qm s
+set +e; $chk "$t" "$base4" HEAD --spec "$t.k/0063-mining.md" >/dev/null 2>&1; got=$?; set -e; [ "$got" = 1 ] || { echo "FAIL: order number in a path passed"; exit 1; }
+git mv e2e/scenarios/0063-p4b-board.mjs e2e/scenarios/board.mjs; git commit -qm r
+set +e; $chk "$t" "$base4" HEAD --spec "$t.k/0063-mining.md" >/dev/null 2>&1; got=$?; set -e; [ "$got" = 0 ] || { echo "FAIL: a behavior-named path failed"; exit 1; }
+rm -rf "$t.k"
 set +e; $chk "$t" deadbeef HEAD >/dev/null 2>&1; got=$?; set -e; [ "$got" = 2 ] || { echo "FAIL: bad base gave $got, want 2"; exit 1; }
 echo ok

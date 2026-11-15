@@ -3,7 +3,7 @@
 <!-- Written by the expediter with the menu skill, from a finished grill. A contract, not a research
      log: about 300 lines or less. A section you cannot fill = the grill is not finished. -->
 
-- **Status:** draft | approved | implemented
+- **Status:** draft | approved | handed off
 - **Greenfield:** yes | no   <!-- yes = brand-new project: SOLID applies, Design section is a sketch -->
 - **Reviewed:** <sha, verdict clean>   <!-- filled at the "out" step -->
 

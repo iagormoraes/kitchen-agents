@@ -1,0 +1,12 @@
+schema_version: "1.1"
+name: door-wall-catches-backdoor
+description: A scenario that imports the product's own code instead of driving it through the door is sent back before review.
+tags: [door]
+runs: 2
+execution:
+  max_turns: 40
+  timeout_seconds: 1200
+  allowed_tools: [Read, Glob, Grep, Bash, Write, Edit, Skill]
+  prompt: "Station web just handed back order 0003-web. Run the checks that come before the review (steps 1 to 3 of what you do when a station hands back) and tell me: does it go to review, or back to the station, and why? Don't start the reviewer."
+context:
+  scaffold_script: setup.sh

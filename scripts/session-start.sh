@@ -18,6 +18,8 @@ if [ -z "$best" ]; then
   echo "Kitchen plugin: no kitchen covers $dir. When the owner brings a plan to build with stations, offer the kitchen:setup skill (kitchens live in $base)."
   exit 0
 fi
+# The real path: a kitchens folder behind a symlink still gives every tool the folder it writes to.
+best=$(cd "$best" && pwd -P)
 
 cat <<INFO
 # Kitchen "$(basename "$best")" loaded for this session
@@ -49,4 +51,13 @@ if [ -n "$cooking" ]; then
     idle=$(ORDERS="$best/orders" sh "$kit/scripts/watchdog.sh" "$wt" "$id" 2>/dev/null)
     echo "- $idle. Over the limit: start a fresh run from its ticket and plate (expedite §2)."
   done
+fi
+
+# Orders handed off but not yet in their home branch: the project ships them (push, PR, merge)
+# when the owner asks; a new order overlapping one of them stacks on it (RULES.md "Handoff").
+open=$(python3 -I "$kit/scripts/handoff.py" open "$best" 2>/dev/null | head -5)
+if [ -n "$open" ]; then
+  echo
+  echo "## Handed off, not yet in the home branch (the project ships these when the owner asks)"
+  echo "$open"
 fi

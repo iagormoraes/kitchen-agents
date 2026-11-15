@@ -25,4 +25,15 @@ expect "$t/ws"            "0004-web: idle"
 printf -- '- **Status:** done\n' > "$t/kitchens/game/orders/0004-web/plate.md"
 out=$(CLAUDE_PROJECT_DIR=$t/ws CLAUDE_PLUGIN_ROOT=$kit KITCHENS=$t/kitchens sh "$kit/scripts/session-start.sh")
 case "$out" in *"0004-web"*) echo "FAIL: a finished station was listed"; exit 1 ;; esac
+# a handoff not yet merged is listed; once the project squash-merges it, it is gone
+r="$t/ws/shop"; git init -q -b main "$r"
+export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@t GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@t
+echo a > "$r/a"; git -C "$r" add .; git -C "$r" commit -qm init
+git -C "$r" switch -q -c invoice-export; echo b > "$r/b"; git -C "$r" add .; git -C "$r" commit -qm export; git -C "$r" switch -q main
+printf '\n| Repo | Absolute path | Default branch |\n| --- | --- | --- |\n| shop | `%s` | `main` |\n' "$r" >> "$t/kitchens/game/kitchen.md"
+mkdir -p "$t/kitchens/game/orders/0005-handoff/shop"; echo invoice-export > "$t/kitchens/game/orders/0005-handoff/shop/branch"
+expect "$t/ws"            "shop: invoice-export on main"
+git -C "$r" merge -q --squash invoice-export >/dev/null; git -C "$r" commit -qm "Export invoices"
+out=$(CLAUDE_PROJECT_DIR=$t/ws CLAUDE_PLUGIN_ROOT=$kit KITCHENS=$t/kitchens sh "$kit/scripts/session-start.sh")
+case "$out" in *"invoice-export"*) echo "FAIL: a merged handoff was listed"; exit 1 ;; esac
 echo ok

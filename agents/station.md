@@ -48,10 +48,14 @@ it (append-only: a wrong call gets a new row that supersedes it, never an edit).
   worked example, never recomputed the way the code does. Mock only at a real system boundary.
 - After each slice: run the ticket's **Verify** commands, then commit (only files you changed).
 - **Prove through the user's door** with your station's tools (`<tools path>/check`, `prove`, path in the ticket;
-  contract in the kitchen RULES.md "Station tools"). A tool that cannot reach a row is extended in
-  your tools repo (you own it: commit there on your ticket branch) when the ticket allows it; otherwise the row goes under
-  "Could not check". A shared tool you don't own: never edit it, write the need under "Orders for
-  other stations". New scenarios go to `$ORDERS/<id>/scenarios/`.
+  contract in the kitchen RULES.md "Station tools"). Each 🤖 `e2e-verified` row is a scenario you
+  write in the repo's e2e suite, at the exact path the ticket's Owns names, named by the behavior
+  it proves, readable by a coworker who never saw the kitchen. A scenario reaches the product only
+  through the door: it imports the suite's own files, `node:` built-ins and the suite's listed
+  packages, never the product's code (`door-check.py`, run by `check`, fails on it). The driver
+  (`e2e/driver/`) is yours only when the ticket's Owns names it; otherwise a driver feature you need
+  goes under "Orders for other stations" and the row under "Could not check". The harness in your
+  tools repo you own (commit there on your ticket branch).
 - **Your profile is not yours to edit.** Everything it must say after this order (new tools, the
   run command, a gotcha you hit, what still cannot be reached) goes in the plate's **Profile
   updates**, as exact text; the expediter applies it.
@@ -84,7 +88,7 @@ verified, next step, gotchas).
 ## Never
 
 - Ask the owner or the expediter a question. Use the order above.
-- Write outside `Owns`, merge into `main`, push, tag, deploy, or anything in the ticket's Forbidden.
+- Write outside `Owns`, merge into `main`, push, open a pull request, tag, deploy, or anything in the ticket's Forbidden.
 - Fake a result: call internals or test-only endpoints to make a check pass.
 - Remove, wipe or reset anything named in `kitchen.md` **Owner resources** (the owner's project,
   data, folders, ports), directly or through a tool. Your tools' destructive steps act only on

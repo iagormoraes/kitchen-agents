@@ -15,8 +15,10 @@ decision ids ("spec C4", "decision D12"). `--spec` adds every id a spec defines 
 inside a placeholder (`TS_D1`). `--exclude` skips paths (the owner's own design docs). `--allow` drops words that are the product's own domain
 (a help desk's "ticket", a train app's "station"); the kitchen's House rules list them.
 Exit 0 clean, 1 hits (each printed as file:line: word: text), 2 git failed.
-`--message` checks a commit message file before it is used (the squash commit's history is the
-product's: no "(order 0002)", no spec id).
+`--message` checks a commit message, a branch name or a handoff summary before it is used (the
+history is the product's: no "(order 0002)", no spec id, no bare order number like "0063").
+A new file's path is checked too: a kitchen word, a spec id, or (with `--spec`) an order number
+taken from the spec file names (`scenarios/0063-board.mjs`) fails like a line does.
 Prose that names no kitchen word ("as a later order will do") is the reviewer's to catch.
 """
 import fnmatch
@@ -48,27 +50,42 @@ def spec_ids(texts):
     return ids
 
 
-def scan(diff, allow=(), ids=(), exclude=()):
-    """Yield (file, line number, term, text) for each added line that names a kitchen word or id."""
+def spec_numbers(paths):
+    """The order numbers the kitchen uses: the NNNN of each spec file name (0063-mining.md)."""
+    return {m.group(1) for p in paths if (m := re.match(r"(\d{4})-", p.rsplit("/", 1)[-1]))}
+
+
+def scan(diff, allow=(), ids=(), exclude=(), numbers=(), number_lines=False):
+    """Yield (file, line number, term, text) for each added line that names a kitchen word or id,
+    and (file, 0, term, path) for each added file whose path does (scenarios/0063-board.mjs)."""
     pats = {name: re.compile(p, re.I) for name, p in TERMS.items() if name not in allow}
     ids = [i for i in ids if i not in allow]
     if ids:   # bare, in parentheses or inside a name (lowercase before), never inside a placeholder
         pats["spec id"] = re.compile(r"(?<![A-Z0-9_{\-])(" + "|".join(map(re.escape, sorted(ids, key=len, reverse=True))) + r")(?![0-9])")
-    path, line = None, 0
+    path_pats = dict(pats)
+    if numbers:   # an order number in a file or folder name, never inside a longer number
+        path_pats["order number"] = re.compile(r"(?<![0-9])(" + "|".join(sorted(numbers)) + r")(?![0-9])")
+    path, line, prev = None, 0, ""
     for raw in diff.splitlines():
         if raw.startswith("+++ "):
             path = raw[6:] if raw.startswith("+++ b/") else None
+            if path and prev == "--- /dev/null" and not any(fnmatch.fnmatch(path, g) for g in exclude):
+                for name, pat in path_pats.items():
+                    if pat.search(path):
+                        yield path, 0, name, path
+                        break
         elif raw.startswith("@@"):
             m = re.search(r"\+(\d+)", raw)
             line = int(m.group(1)) if m else 0
         elif raw.startswith("+") and path and not LOCKFILE.search(path) and not any(fnmatch.fnmatch(path, g) for g in exclude):
-            for name, pat in pats.items():
+            for name, pat in (path_pats if number_lines else pats).items():
                 if pat.search(raw[1:]):
                     yield path, line, name, raw[1:].strip()
                     break
             line += 1
         elif not raw.startswith("-") and not raw.startswith("\\"):
             line += 1
+        prev = raw
 
 
 def message_as_diff(text):
@@ -109,6 +126,18 @@ def selftest():
     bad = "feat: all tag types, full events, management, reports and the display SDK (order 0002)"
     assert [t for _, _, t, _ in scan(message_as_diff(bad))] == ["order id"]
     assert list(scan(message_as_diff("feat: all tag types, full events and the display SDK"))) == []
+    # paths: the real v1 case (scenarios named by order), and a behavior name next to it
+    nums = spec_numbers(["/k/specs/0063-mining.md", "/k/specs/research/notes.md"])
+    assert nums == {"0063"}, nums
+    new = "\n".join(["--- /dev/null", "+++ b/e2e/scenarios/0063-p4b-board.mjs", "@@ -0,0 +1 @@", "+ok",
+                     "--- /dev/null", "+++ b/e2e/scenarios/cash-shop-storage.mjs", "@@ -0,0 +1 @@", "+ok",
+                     "--- /dev/null", "+++ b/tools/station-check.sh", "@@ -0,0 +1 @@", "+ok",
+                     "--- /dev/null", "+++ b/data/100635.csv", "@@ -0,0 +1 @@", "+ok",   # longer number
+                     "--- a/old-0063.txt", "+++ b/old-0063.txt", "@@ -1 +1 @@", "+ok"])     # existing file: not new
+    assert [(f, n, t) for f, n, t, _ in scan(new, numbers=nums)] == [
+        ("e2e/scenarios/0063-p4b-board.mjs", 0, "order number"), ("tools/station-check.sh", 0, "station")]
+    assert [t for _, _, t, _ in scan(message_as_diff("invoice-export-0063"), numbers=nums, number_lines=True)] == ["order number"]
+    assert list(scan(message_as_diff("invoice-export"), numbers=nums, number_lines=True)) == []
     print("selftest ok")
 
 
@@ -140,7 +169,7 @@ def main(argv):
             diff = message_as_diff(open(message).read())
         except OSError as e:
             print(e, file=sys.stderr); return 2
-        hits = list(scan(diff, allow, ids))
+        hits = list(scan(diff, allow, ids, numbers=spec_numbers(specs), number_lines=True))
         for _, n, term, text in hits:
             print(f"commit message line {n}: {term}: {text[:120]}")
         print(f"leak check: {len(hits)} kitchen word(s) in the commit message")
@@ -160,7 +189,7 @@ def main(argv):
                        capture_output=True, text=True)
     if r.returncode != 0:
         print(r.stderr.strip(), file=sys.stderr); return 2
-    hits = list(scan(r.stdout, allow, ids, exclude))
+    hits = list(scan(r.stdout, allow, ids, exclude, spec_numbers(specs)))
     for f, n, term, text in hits:
         print(f"{f}:{n}: {term}: {text[:120]}")
     print(f"leak check: {len(hits)} kitchen word(s) in the product" + (f" (allowed: {', '.join(sorted(allow))})" if allow else ""))

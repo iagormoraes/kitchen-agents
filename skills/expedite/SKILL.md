@@ -1,6 +1,6 @@
 ---
 name: expedite
-description: Steps 6 to 8 of the kitchen. Dispatch approved tickets to stations, watch them, check ownership, run the review, decide fix rounds, and hand the owner one finished plate. Use after the owner approves the spec and ownership map from mise-en-place.
+description: Steps 6 to 9 of the kitchen. Dispatch approved tickets to stations, watch them, check ownership, run the review, decide fix rounds, hand the owner one finished plate, and on approval leave one handoff branch per repo for the project to ship. Use after the owner approves the spec and ownership map from mise-en-place.
 ---
 
 Adapted from pstack `orchestrate`, `autopilot-stack`, `ketchup` (MIT) and mattpocock/skills
@@ -38,7 +38,8 @@ evidence, not only summaries.
   while cooking (only at the pass, by you, in §5 Set the table).
 - **One agent per path, across all orders.** Before dispatching a ticket, compare its `Owns` with
   every ticket still cooking in any order (`$ORDERS/*/plate.md` not `done`). An overlap waits until
-  that station hands back, exactly like a `Blocked by`.
+  that order is handed off (§7), then stacks on its handoff branch: `mise-en-place` cuts the
+  worktree again from the base `handoff.py base` now prints.
 - **An owner ticket** (`Station: owner`) is never dispatched to an agent. When its blockers are
   done, run `kitchen:line` with the owner, while agent tickets keep cooking. Its review and pass
   are the same as any station's.
@@ -80,7 +81,9 @@ evidence, not only summaries.
    spec in $KITCHEN_HOME/specs/> [--allow <House rules "Leak check allows">] [--exclude <the owner's
    own design docs>]`. With `--spec` it also finds the spec's ids (`C7`, `D9`, `S5`) in comments,
    docs and names. A hit is a fix round before review: the product never
-   knows about the kitchen. Then run every **Check** in this kitchen's House rules. Then read the
+   knows about the kitchen. When the repo has an e2e suite, `python3 $KITCHEN/scripts/door-check.py
+   <station worktree>`: a crossing is a fix round too (a scenario reaching past the door proves
+   nothing). Then run every **Check** in this kitchen's House rules. Then read the
    diff yourself for what no word list catches (an isolation-only setting, "a later order" in a
    comment).
 4. Review: `Agent` with `subagent_type: kitchen:reviewer`, giving it, all as **absolute** paths: the
@@ -108,7 +111,8 @@ evidence, not only summaries.
 
 | State | Action |
 | --- | --- |
-| Verdict clean, attack report "held" (or no surface), every 🤖 row passes at a verified level, ownership check passes | the pass |
+| Verdict clean, attack report "held" (or no surface), every 🤖 row passes at a verified level, ownership check passes, the full suite passes on `order/<NNNN>` | the pass |
+| The full suite fails on a scenario this order did not touch | run that scenario on the base commit (detached worktree). Fails there too: pre-existing, listed in the pass, not a round. Passes there: this order broke it, a fix round |
 | "Act on" findings or proven attack findings, fix round 1 or 2 | a **fresh** station run: ticket + plate + verdict + attack report. Only "Act on" and proven findings go back, each fixed with a test that runs the attack and fails on the old code. The re-review and a re-attack cover the new commit |
 | Still "Act on" after fix round 2 | stop. The ticket or spec is wrong. Bring the owner a re-spec proposal |
 | A 🤖 row only `build-only` or `blocked` | a fix round, unless the plate proves no tool can reach it: then it becomes a 👤 row |
@@ -119,7 +123,11 @@ a branch that is checked out somewhere else, use a detached one:
 `git -C <repo> worktree add --detach $WORKTREES/<id>-check/<repo name> <branch or sha>`, and remove
 it after. If the worktree can't be created, stop: never fall back to the owner's folder.
 
-**Before the pass, scan the whole product, not just this order's changes:**
+**Before the pass, prove the order completely:** in a detached worktree of `order/<NNNN>`, run
+each touched repo's station `prove --all` once. Its `result.json` must say `"selected": "all"`. A
+repo with no suite yet says so in the pass.
+
+**Then scan the whole product, not just this order's changes:**
 `python3 $KITCHEN/scripts/leak-check.py <detached worktree of order/<NNNN>> --all --spec <every spec>
 [--allow …] [--exclude …]`. A diff only shows what this order changed; a leak an earlier order left
 is found here. Any hit, whoever wrote it, is removed as small work on `order/<NNNN>` before the
@@ -169,37 +177,53 @@ Run `<the daily "start developing" command from the spec's Owner commands, with 
 there and open `<url>`. Nothing is in `<home branch>` yet.
 
 **Taste these (👤):** <numbered steps, expected result each>
-**Screenshots:** `<evidence folder>`
+**Evidence:** `<evidence folder>` (screenshots per step, a video per scenario)
+**Full suite:** <N scenarios passed on `order/<NNNN>`> · pre-existing failures: <scenario: one line each, or "none">
 **Gates waiting on you:** <each: question, options, default taken> or "none"
 **Consider (not done):** <one line each> or "none"
 **Next orders born during cooking:** <one line each> or "none"
 
-Approve to merge into `<home branch>` in: <each repo touched>? (separate go for push)
+Approve to hand off `<handoff branch>` in: <each repo touched>? (one commit each, on `<base>`; the
+kitchen never pushes or merges: your project's flow ships it)
 ```
 
 ## 7. Out
 
-- **Approved:** in each repo, `switch` back to the home branch, squash-merge `order/<NNNN>` into it
-  with a message that says what changed in the product, in the repo's own commit style. It never
-  names an order, a spec, a ticket or an id (`(order 0002)`, `C7`): the history is the product's.
-  Write it to `$ORDERS/<id>/commit-msg`, check it with `python3 $KITCHEN/scripts/leak-check.py
-  --message $ORDERS/<id>/commit-msg --spec <every spec>`, and commit with `git commit -F` that file,
-  run the install step again, then push only on a second go. **Home branch with no commit yet**
-  (empty repo): `git switch --orphan <home>`, `git checkout order/<NNNN> -- .`, then one commit:
-  that commit starts the history. Merge each station's
-  `feat/<id>-<station>` branch in its tools repo (if it changed tools). The spec gets
-  `Status: implemented` and `Reviewed: <sha>, verdict clean`. Apply the plate's **Profile updates**
-  to `$KITCHEN_HOME/stations/<name>/station.md` (they are facts: its tools, run command, gotchas,
-  what it cannot reach), so the next ticket starts from a true profile. Commit both in the kitchen
-  repo. If the spec added or changed an owner default, update `kitchen.md` Owner resources too.
+- **Approved:** for each repo touched, build the handoff branch **without touching the owner's
+  folder**:
+  1. Name it for the product (`invoice-export`), from the spec's goal. Write the commit message
+     (what changed in the product, in the repo's own commit style) to
+     `$ORDERS/<NNNN>-handoff/<repo name>/commit-msg` and the name to `.../branch`. Both pass
+     `python3 $KITCHEN/scripts/leak-check.py --message <file> --spec <every spec>`: no order, spec,
+     ticket or id, not even a bare `0063`.
+  2. The base is the one the order cooked on (the home branch, or the handoff branch it stacked on).
+     `git -C <repo> worktree add $WORKTREES/<NNNN>-out/<repo name> -b <name> <base>`, then in it
+     `git merge --squash order/<NNNN>` and `git commit -F <commit-msg>`. **Base with no commit
+     yet** (empty repo): `worktree add --orphan -b <name> <folder>`, `git checkout order/<NNNN> -- .`,
+     then the one commit. Check `git diff --quiet <name> order/<NNNN>`, then remove that worktree.
+  3. Write `.../summary.md` from `$KITCHEN/templates/handoff.md` and copy into `.../evidence/` only
+     what it shows: for each scenario the order added or changed, its last screenshot and its
+     video, plus any failing step. Rename nothing by id. Run `leak-check.py --message` on
+     `summary.md` too.
+- Then, in each repo: `switch` the owner's folder back to the home branch and run the install
+  step. Merge each station's `feat/<id>-<station>` branch in its tools repo (if it changed tools).
+  The spec gets `Status: handed off` and `Reviewed: <sha>, verdict clean`, with each repo's handoff
+  branch. Apply the plate's **Profile updates** to `$KITCHEN_HOME/stations/<name>/station.md`
+  (they are facts: its tools, run command, gotchas, what it cannot reach), so the next ticket starts
+  from a true profile. Commit both in the kitchen repo. If the spec added or changed an owner
+  default, update `kitchen.md` Owner resources too.
 - **Changes asked or rejected:** `switch` each repo back to its home branch and run the install
   step, so the folder is as the owner left it. A **rejected** order also deletes its worktrees and
   its `feat/<id>-*` and `order/<NNNN>` branches, in the product repo and the tools repos. Changes become the next order (or a fix round, when
   they are a spec violation the review missed).
 
-Then remove each station's worktree (`git -C <repo> worktree remove <folder>`). Once the squash
-commit is on the home branch and its tree equals `order/<NNNN>`'s (`git diff --quiet <home> order/<NNNN>`),
-delete `order/<NNNN>` and every `feat/<id>-*` branch of the order in the product repo
-(`git branch -D`): the product keeps only its own history, never kitchen branches.
-`git -C <repo> branch --list 'feat/*' 'order/*'` must then print nothing for this order's id. Then
-run the `retro` skill.
+Then remove each station's worktree (`git -C <repo> worktree remove <folder>`). Once the handoff
+branch's tree equals `order/<NNNN>`'s, delete `order/<NNNN>` and every `feat/<id>-*` branch of
+the order in the product repo (`git branch -D`): the repo keeps only the product-named handoff
+branch, never kitchen branches. `git -C <repo> branch --list 'feat/*' 'order/*'` must then print
+nothing for this order's id. **Never push, merge or delete the handoff branch**: it is the
+project's now. Then run the `retro` skill.
+
+**Hand over in one message:** each repo's handoff branch, its base, and the summary path, so the
+project's own flow (a pull request skill, a push) can take it from there:
+`<repo>: <branch> on <base> · $ORDERS/<NNNN>-handoff/<repo name>/summary.md`.

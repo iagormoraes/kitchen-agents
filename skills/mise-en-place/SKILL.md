@@ -26,7 +26,11 @@ the session-start brief). It holds the rules every step below relies on.
 
 Copy `$KITCHEN/templates/ticket.md` to `$ORDERS/<id>/ticket.md`. Every field filled. Start from the
 station's profile `$KITCHEN_HOME/stations/<name>/station.md`: `Owns` may narrow its default, never widen it; Verify uses
-its tools' `check` and `prove`, and Owns always includes its tools repo `$KITCHEN_HOME/stations/<name>/tools/`. A station with no profile gets one first (from `templates/station.md`), approved with the spec. Paste, never
+its tools' `check` and `prove`, and Owns always includes its tools repo `$KITCHEN_HOME/stations/<name>/tools/`.
+Each 🤖 `e2e-verified` row names the scenario that proves it, by behavior (`--row S4=renewal`),
+and Owns names that scenario's exact file in the repo's suite (`e2e/scenarios/renewal.mjs`).
+Only the driver's owner station owns `e2e/driver/`; a driver feature another ticket needs is a
+ticket for that owner, blocking it. A station with no profile gets one first (from `templates/station.md`), approved with the spec. Paste, never
 point at this chat: a station cannot see it. Copy the spec's **Policies** and the applying
 **Principles** word for word.
 
@@ -46,9 +50,17 @@ ticket does it first.
 
 ## 4. Dry run with the taster
 
-First create each station's worktree and branches, **once** (the commands in `expedite` §1
-Dispatch; no worktree for a `Station: owner` ticket), so every path the ticket names exists when the
-taster checks it. `expedite` reuses them.
+First pick each repo's **base**, so this order never collides with an open one (kitchen
+`RULES.md` "Handoff"): `python3 $KITCHEN/scripts/handoff.py base <repo> <home branch> $ORDERS
+<this order's tickets for that repo>`. It prints the home branch, or the handoff branch to stack
+on; exit 3 means two open handoffs overlap this order and neither builds on the other, so the order
+waits (say so in the approval message, with the branches it waits for). A ticket whose Owns
+overlap a ticket still cooking in another order waits too. The base goes in each ticket and, as
+**Builds on**, in the handoff.
+
+Then create each station's worktree and branches from that base, **once** (the commands in
+`expedite` §1 Dispatch; no worktree for a `Station: owner` ticket), so every path the ticket names
+exists when the taster checks it. `expedite` reuses them.
 
 For each ticket, run `Agent` with `subagent_type: kitchen:taster`, giving it only the ticket path and the
 spec path. It returns `facts: N · decisions: N`. Save each answer, unchanged, to
@@ -68,10 +80,11 @@ spec path. It returns `facts: N · decisions: N`. Save each answer, unchanged, t
 
 Write every URL or command that exists only after cooking as "after the build". Show the owner,
 in one message, opening with: **"This approves the plan, not the result. You taste
-the real thing before anything reaches `main`."**
+the real thing before anything is handed off."**
 
 1. The spec path and a 5-line summary.
-2. The **ownership map**: station, owns, blocked by, budget.
+2. The **ownership map**: station, owns, blocked by, budget, and each repo's base (home, stacked
+   on `<branch>`, or waiting for `<branches>`).
 3. The 👤 rows they will taste.
 4. `taster: facts 0 · decisions 0 on N tickets, in R rounds`.
 5. **Attention:** the leftovers after 3 taster rounds, or "none".

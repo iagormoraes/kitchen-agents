@@ -1,6 +1,6 @@
 ---
 name: retro
-description: Step 9 of the kitchen. After an order goes out, turn every gate, taster question, extra round and owner correction into a check, a grill question or a spec field in this kitchen's House rules (never in the plugin). It writes the retro to disk and applies lessons that only add safety on its own; anything that loosens a bar or touches the product waits for the owner. Use after the expedite skill's "out" step, or when the owner says "retro".
+description: Step 10 of the kitchen. After an order goes out, turn every gate, taster question, extra round and owner correction into a check, a grill question or a spec field in this kitchen's House rules (never in the plugin). It writes the retro to disk and applies lessons that only add safety on its own; anything that loosens a bar or touches the product waits for the owner. Use after the expedite skill's "out" step, or when the owner says "retro".
 ---
 
 Adapted from mattpocock/skills `retro` and pstack `correct` (MIT).
@@ -47,10 +47,12 @@ House rules.
 `$KITCHEN_HOME/retro/kit-proposals.md` (miss, evidence, proposed change to the plugin, proof it
 fails on the real case). That file is for the plugin's maintainer. Never apply it to the plugin.
 
-## 3. Promote scenarios
+## 3. Scenarios left behind
 
-Each scenario in `$ORDERS/<id>/scenarios/` that proves lasting behavior: propose moving it to
-`$KITCHEN_HOME/stations/<station>/tools/<tool>/scenarios/`, renamed by what it proves. One-off probes stay in the order.
+Each order writes its scenarios straight into the repo's e2e suite, so nothing is promoted here.
+List any 🤖 `e2e-verified` row that has no scenario in the suite, and any pre-existing failure the
+pass listed: each becomes a next order (a scenario to write, a failure to fix), on the owner's go,
+because it changes the product.
 
 ## 4. Write it down, apply what only adds safety
 

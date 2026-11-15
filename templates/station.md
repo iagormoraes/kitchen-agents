@@ -51,18 +51,21 @@ mise-en-place makes its ticket block every consumer.>
 - **Door:** <DOM · canvas · HTTP/packets · terminal · code> → **driver:** <browser driver · custom driver · requests · shell>
 - **Did it stick:** <how a proof shows the state was kept: reload, relog, restart then read back>
 
-## Tools (`$KITCHEN_HOME/stations/<name>/tools/`, its own git repo; contract in the kitchen RULES.md "Station tools")
+## The e2e suite (in the repo; contract in the kitchen RULES.md "Station tools")
+
+- **Suite:** `<repo>/e2e/` · run: `<the repo's e2e command, no argument>` · or "none yet: the first ticket builds it"
+- **Driver:** `e2e/driver/` · owner: <this station, or the owner station> · video: yes | no (visual door)
+- **Needs running:** <other repos or services the suite drives against, or "nothing">
+- **Accounts:** `E2E_ACCOUNTS=<path in the kitchen, mode 600>`; never the owner's own account
+
+## Harness (`$KITCHEN_HOME/stations/<name>/tools/`, its own git repo)
 
 ```bash
 REPO=<worktree> ORDERS=<path> ORDER=<id> PORT=<n> $KITCHEN_HOME/stations/<name>/tools/check
-REPO=<worktree> ORDERS=<path> ORDER=<id> PORT=<n> $KITCHEN_HOME/stations/<name>/tools/prove [--expect "<text>"]… [<scenario>…]
+REPO=<worktree> ORDERS=<path> ORDER=<id> PORT=<n> $KITCHEN_HOME/stations/<name>/tools/prove [--row <smoke row>=<scenario>]… [--all]
 ```
 
-| Tool | Folder | Proves | Level |
-| --- | --- | --- | --- |
-| <e2e> | `tools/e2e/` | <pages and flows in a real browser> | e2e-verified |
-
-- **Shared tools it runs (owned elsewhere):** <tool: owner station, or "none">
+- **Drivers it runs (owned elsewhere):** <driver: owner station, or "none">
 - **Cannot reach:** <each thing, and why. These become 👤 rows>
 - **Unit tests in the repo:** <the repo's own test command, which `check` runs>
 
