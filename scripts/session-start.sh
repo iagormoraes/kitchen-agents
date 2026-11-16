@@ -53,11 +53,11 @@ if [ -n "$cooking" ]; then
   done
 fi
 
-# Orders handed off but not yet in their home branch: the project ships them (push, PR, merge)
-# when the owner asks; a new order overlapping one of them stacks on it (RULES.md "Handoff").
+# Orders handed off but not yet in their home branch: the project's own flow ships them (push,
+# PR, merge); a new order overlapping one of them stacks on it (RULES.md "Handoff").
 open=$(python3 -I "$kit/scripts/handoff.py" open "$best" 2>/dev/null | head -5)
 if [ -n "$open" ]; then
   echo
-  echo "## Handed off, not yet in the home branch (the project ships these when the owner asks)"
+  echo "## Handed off, not yet in the home branch (the project's own flow ships these)"
   echo "$open"
 fi

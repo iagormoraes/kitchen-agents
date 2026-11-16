@@ -181,8 +181,9 @@ branch, never opens a pull request.
 - **Every handoff names its base.** `summary.md` says **Builds on:** (the home branch, or the
   branch it stacks on) and **Proven on:** (the exact commits the full suite passed on).
 - **Every session knows what waits to ship.** The session-start brief lists each handoff not yet
-  in its home branch (`handoff.py open`), so a new session can ship one when the owner asks, with
-  the project's own flow, and a new order sees what it may stack on. A merged one drops off by itself.
+  in its home branch (`handoff.py open`), so the project's own flow can ship it from a new
+  session too, and a new order sees what it may stack on. When the project ships is its own rule
+  (the owner's approval at the pass may already be the go): the kitchen never adds a question. A merged one drops off by itself.
 - **The kitchen vouches only for the base it proved on.** When a base branch changes after the
   handoff (the project's review changed it), restacking is the project's. Proving it again is the
   kitchen's: a **re-prove** order rebases the branch on the new base and runs the full suite, with
