@@ -163,7 +163,8 @@ branch, never opens a pull request.
 - **One handoff branch per repo touched**, named for the product (`invoice-export`), with **one
   commit** whose message says what changed in the product. Name and message pass
   `leak-check.py --message`. It is recorded in `$ORDERS/<NNNN>-handoff/<repo name>/`:
-  `branch` (one line: its name), `summary.md` (from `templates/handoff.md`, product words only) and
+  `branch` (one line: its name), `commit` (its commit id, so landing is seen even when the project
+  deletes the branch on merge), `summary.md` (from `templates/handoff.md`, product words only) and
   `evidence/` (the files the summary shows, named by scenario).
 - **Open orders never collide.** An order is open while it cooks, and after its handoff until its
   change is in the home branch (`python3 $KITCHEN/scripts/handoff.py landed <repo> <home> <branch>`).
@@ -184,6 +185,12 @@ branch, never opens a pull request.
   in its home branch (`handoff.py open`), so the project's own flow can ship it from a new
   session too, and a new order sees what it may stack on. When the project ships is its own rule
   (the owner's approval at the pass may already be the go): the kitchen never adds a question. A merged one drops off by itself.
+- **A delivered order leaves nothing behind.** In the first session after all of an order's
+  handoffs are merged, the session-start hook runs `handoff.py clean`: it removes the order's
+  `evidence/` and `scenarios/` folders, its logs, images, videos and archives, and its worktrees,
+  and says so in the brief. The paperwork stays (tickets, plates, verdicts, gates, summaries).
+  Evidence is never kept once its order is merged: re-running the suite recreates it. A rejected
+  order is cleaned at once: `handoff.py clean <KITCHEN_HOME> <NNNN>`.
 - **The kitchen vouches only for the base it proved on.** When a base branch changes after the
   handoff (the project's review changed it), restacking is the project's. Proving it again is the
   kitchen's: a **re-prove** order rebases the branch on the new base and runs the full suite, with
@@ -201,7 +208,7 @@ One writer per file. Copy each file from `$KITCHEN/templates/`; never invent a s
 | `gates.md` | station asks, owner answers at the pass | owner-only decisions, with the default the station took |
 | `verdict-<sha>.md` | reviewer | Act on / Consider / Noted / Dismissed |
 | `evidence/` | tools, with `ORDER=<id>` | screenshots, videos, logs, outputs |
-| `$ORDERS/<NNNN>-handoff/<repo name>/` | expediter, at the out step | `branch`, `summary.md`, `evidence/`: what the project's flow ships (see "Handoff") |
+| `$ORDERS/<NNNN>-handoff/<repo name>/` | expediter, at the out step | `branch`, `commit`, `summary.md`, `evidence/`: what the project's flow ships (see "Handoff"). `$ORDERS/<NNNN>-handoff/cleaned` once its leftovers are removed |
 
 ## What proves a plate
 
@@ -369,6 +376,7 @@ lesson every project needs goes to `$KITCHEN_HOME/retro/kit-proposals.md` for th
 | No kitchen word or spec id in the product | `scripts/leak-check.py --spec`: by the station before hand-back, by the expediter on every branch before review, `--all` on the whole product before every pass (catches what earlier orders left), `--message` on the handoff commit message, branch name and summary; new file paths too (an order number in a scenario name); `scripts/test-leak-check.sh` |
 | Open orders never collide; a handoff names its base | `scripts/handoff.py base` before worktrees are cut, `handoff.py landed` to close an order; its `--selftest` builds real stacked and squash-merged branches |
 | A new session knows the open handoffs | `handoff.py open` in the session-start brief; `scripts/test-session-start.sh` (listed while open, gone once squash-merged) |
+| A merged order leaves no evidence, logs, media or worktrees behind | `handoff.py clean`, run by the session-start hook; its `--selftest` (nothing removed while open, paperwork kept, a branch deleted on merge still seen through its commit) and `scripts/test-session-start.sh` |
 | The kitchen never pushes or merges | text only: `expedite` §7 has no push or merge step; `agents/station.md` Never |
 | Stations never ask the owner | `agents/station.md` has no `AskUserQuestion` tool |
 | The AI never writes the code an owner ticket gives the owner | the plugin's `PreToolUse` hook `scripts/kitchen.py guard` denies `Edit`/`Write`/`MultiEdit`/`NotebookEdit` on those paths until the plate is done or the owner says "take over"; `scripts/test-owner-guard.sh`. Writes through Bash: text only (`kitchen:line`) |

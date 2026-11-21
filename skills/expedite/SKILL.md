@@ -200,7 +200,8 @@ kitchen never pushes or merges: your project's flow ships it)
      `git -C <repo> worktree add $WORKTREES/<NNNN>-out/<repo name> -b <name> <base>`, then in it
      `git merge --squash order/<NNNN>` and `git commit -F <commit-msg>`. **Base with no commit
      yet** (empty repo): `worktree add --orphan -b <name> <folder>`, `git checkout order/<NNNN> -- .`,
-     then the one commit. Check `git diff --quiet <name> order/<NNNN>`, then remove that worktree.
+     then the one commit. Check `git diff --quiet <name> order/<NNNN>`, write `git rev-parse <name>`
+     to `.../commit`, then remove that worktree.
   3. Write `.../summary.md` from `$KITCHEN/templates/handoff.md` and copy into `.../evidence/` only
      what it shows: for each scenario the order added or changed, its last screenshot and its
      video, plus any failing step. Rename nothing by id. Run `leak-check.py --message` on
@@ -214,7 +215,8 @@ kitchen never pushes or merges: your project's flow ships it)
   default, update `kitchen.md` Owner resources too.
 - **Changes asked or rejected:** `switch` each repo back to its home branch and run the install
   step, so the folder is as the owner left it. A **rejected** order also deletes its worktrees and
-  its `feat/<id>-*` and `order/<NNNN>` branches, in the product repo and the tools repos. Changes become the next order (or a fix round, when
+  its `feat/<id>-*` and `order/<NNNN>` branches, in the product repo and the tools repos, then
+  removes its evidence and logs: `python3 $KITCHEN/scripts/handoff.py clean $KITCHEN_HOME <NNNN>`. Changes become the next order (or a fix round, when
   they are a spec violation the review missed).
 
 Then remove each station's worktree (`git -C <repo> worktree remove <folder>`). Once the handoff

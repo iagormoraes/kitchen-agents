@@ -6,7 +6,9 @@
 # The session belongs to the kitchen whose root is the longest match for its folder, so a session
 # started in a subfolder of a workspace still gets the workspace's kitchen.
 # Match: print a short brief (paths, the principles, kitchen.md). No match: one line offering
-# kitchen:setup. Never writes anything. Output stays small: session-start context is cut when long.
+# kitchen:setup. It writes nothing but one thing: the leftovers of orders already merged (evidence,
+# logs, media, worktrees) are removed from the kitchen home (handoff.py clean). Output stays small:
+# session-start context is cut when long.
 dir=${CLAUDE_PROJECT_DIR:-$PWD}
 kit=${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}
 base=${KITCHENS:-$HOME/.claude/kitchens}
@@ -55,6 +57,12 @@ fi
 
 # Orders handed off but not yet in their home branch: the project's own flow ships them (push,
 # PR, merge); a new order overlapping one of them stacks on it (RULES.md "Handoff").
+cleaned=$(python3 -I "$kit/scripts/handoff.py" clean "$best" 2>/dev/null | head -5)
+if [ -n "$cleaned" ]; then
+  echo
+  echo "## Merged orders cleaned (evidence, logs, media, worktrees removed; paperwork kept)"
+  echo "$cleaned"
+fi
 open=$(python3 -I "$kit/scripts/handoff.py" open "$best" 2>/dev/null | head -5)
 if [ -n "$open" ]; then
   echo

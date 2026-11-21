@@ -116,6 +116,7 @@ ORDERS=<home>/orders $K/scripts/watchdog.sh <worktree> <id> [minutes]   # exit 2
 python3 $K/scripts/leak-check.py <worktree> <base sha> [--allow word,word]   # exit 1 = kitchen words in the product
 python3 $K/scripts/door-check.py <worktree>                                   # exit 1 = the e2e suite reaches past the door
 python3 $K/scripts/handoff.py base <repo> <home> $ORDERS <ticket>...          # the base a new order cooks from; exit 3 = wait
+python3 $K/scripts/handoff.py clean <kitchen home> [<NNNN>]                    # remove merged (or rejected) orders' evidence, logs, worktrees
 python3 $K/scripts/ownership-check.py --selftest; python3 $K/scripts/scope.py; sh $K/scripts/test-session-start.sh; sh $K/scripts/test-ownership-check.sh; sh $K/scripts/test-owner-guard.sh; sh $K/scripts/test-leak-check.sh; sh $K/scripts/test-watch-orders.sh; python3 -I $K/scripts/door-check.py --selftest; python3 -I $K/scripts/handoff.py --selftest; python3 -I $K/scripts/kitchen.py --selftest   # and: python3 -I $K/scripts/kitchen.py check <kitchen>   # self-checks
 ```
 
