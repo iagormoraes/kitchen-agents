@@ -38,9 +38,12 @@ kitchen, and a project inside a workspace may have a kitchen of its own.
 The kitchen repo and the tools repos are local. Never add a remote unless the owner asks. Only the
 expediter commits in the kitchen repo; only the owning station commits in its tools repo.
 
-**A kitchen never changes the plugin.** Its lessons go in its own home: **House rules** in
-`kitchen.md` (grill questions, spec fields, checks, leak-check allows), gotchas in station
-profiles, checks in station tools. A lesson every project would need is written to
+**A kitchen never changes the plugin.** Its lessons about how the kitchen works go in its own
+home: **House rules** in `kitchen.md` (grill questions, spec fields, checks, leak-check allows),
+kitchen-only gotchas in station profiles, checks in station tools. Its lessons about the product
+(how to set it up, build, run or test it, a device or toolchain gotcha) go in the project's own
+docs or suite, in product words, handed off as one branch per retro: the project learns too. A
+lesson is kept only when it cost something, will recur, is new and changes an action (`retro` §2). A lesson every project would need is written to
 `$KITCHEN_HOME/retro/kit-proposals.md` for the plugin's maintainer, never applied by the session.
 
 **The product never knows about the kitchen, not even as an idea.** Stations, orders, tickets,
