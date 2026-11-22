@@ -80,7 +80,7 @@ spec path. It returns `facts: N · decisions: N`. Save each answer, unchanged, t
 
 Write every URL or command that exists only after cooking as "after the build". Show the owner,
 in one message, opening with: **"This approves the plan, not the result. You taste
-the real thing before anything is handed off."**
+the real thing at the pass, right after it is handed off."**
 
 1. The spec path and a 5-line summary.
 2. The **ownership map**: station, owns, blocked by, budget, and each repo's base (home, stacked
@@ -88,6 +88,9 @@ the real thing before anything is handed off."**
 3. The 👤 rows they will taste.
 4. `taster: facts 0 · decisions 0 on N tickets, in R rounds`.
 5. **Attention:** the leftovers after 3 taster rounds, or "none".
+6. **When the grill asked nothing** (the plan was a complete spec, `grill` §0): the grill's close
+   summary (decisions with their source, policies, out of scope, owner commands), each marked
+   `Recorded from the plan`. This approval is then the owner's only stop before cooking.
 
 The owner approves, asks for changes (back to the step that owns the change), or rejects. A
 rejection deletes the worktrees and branches made for the taster.

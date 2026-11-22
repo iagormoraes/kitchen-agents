@@ -95,7 +95,7 @@ Tickets and agent prompts carry these as absolute paths.
 | Step | Who | Skill | Output |
 | --- | --- | --- | --- |
 | 1. Plan | owner | | a plan, any shape |
-| 2. Grill | expediter + owner | `grill` | decisions, policies, out of scope, all settled |
+| 2. Grill | expediter + owner | `grill` | decisions, policies, out of scope, all settled. A plan that is already a complete spec is recorded, not asked: no grill stop, its summary goes into the approval |
 | 3. Spec | expediter | `menu` | `$KITCHEN_HOME/specs/NNNN-<slug>.md` |
 | 4. Tickets + dry run | expediter + taster | `mise-en-place` | `$ORDERS/<id>/ticket.md` per station, zero taster questions |
 | 5. Approve | owner | | approves spec + ownership map together, asks for changes, or rejects |

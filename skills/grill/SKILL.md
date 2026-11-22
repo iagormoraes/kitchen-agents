@@ -13,8 +13,15 @@ single question. Grill until then. There is no question cap.
 
 ## 0. Say it back
 
-Before the first question, tell the owner in your own words: the goal, the problem behind it, and
-the smallest change you expect to meet it. Fix any mismatch first.
+**A plan that is already a spec** (it states its decisions, data, smoke tests): before saying
+anything, run the checklist (§4) and the House rules' grill questions against it, answering the
+facts yourself (§1). Each item it settles is recorded, not asked: `Recorded from the plan: <the
+decision>`. **Nothing left open: no say-back and no §5 confirmation.** Run `menu` at once; the
+close summary goes into the approval message (`mise-en-place` §5), and the owner confirms both
+there, in one stop. Something left open: say it back, then ask only those items.
+
+Otherwise, before the first question, tell the owner in your own words: the goal, the problem
+behind it, and the smallest change you expect to meet it. Fix any mismatch first.
 
 ## 1. Sort every question
 
@@ -152,4 +159,5 @@ kitchen, never here.
 The grill is done when no decision is left open and every checklist line has an answer. Show the
 owner one summary: **decisions** (each with the source it rests on), **policies** (tie-breaks + defaults), **out of scope**,
 **stations and ownership**, **owner commands** (marked "after the build"). Do not act until the
-owner confirms. Then run the `menu` skill.
+owner confirms. Then run the `menu` skill. A grill that asked nothing (§0) doesn't stop here: its
+summary goes into the approval message instead.
