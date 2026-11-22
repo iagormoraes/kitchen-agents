@@ -2,8 +2,8 @@
 
 A project is a restaurant. Each repo, or each module of one repo, is a **station** with its own
 cook (an agent). A station owns its paths, its tools and its check, and delivers a finished,
-checked plate. Nobody supervises a station while it cooks. The owner stands at **the pass**:
-approves the order, tastes the plate, says when it goes out.
+checked plate. Nobody supervises a station while it cooks. The owner approves the order, and
+stands at **the pass** to taste the plate once it is handed off.
 
 This kit is the Claude Code plugin `kitchen`: its skills are `kitchen:setup`, `kitchen:grill`,
 `kitchen:menu`, `kitchen:mise-en-place`, `kitchen:expedite`, `kitchen:line`, `kitchen:retro`; its
@@ -101,8 +101,8 @@ Tickets and agent prompts carry these as absolute paths.
 | 5. Approve | owner | | approves spec + ownership map together, asks for changes, or rejects |
 | 6. Cook | stations, in parallel | `expedite` | branches, `plate.md`, evidence |
 | 7. Review and attack | reviewer, adversary | `expedite` | `verdict-<sha>.md`, and `attack-<sha>.md` when the ticket has an attack surface |
-| 8. Round or pass | expediter | `expedite` | a fix round (at most 2), or the pass: the expediter switches the owner's folder to the order branch, the owner runs the dev command and tastes |
-| 9. Out | expediter | `expedite` | one handoff branch per repo, never pushed or merged by the kitchen |
+| 8. Round or out | expediter | `expedite` | a fix round (at most 2), or out: one handoff branch per repo at once, never pushed or merged by the kitchen |
+| 9. Pass | owner | `expedite` | the expediter switches the owner's folder to the handoff branch, the owner runs the dev command and tastes; the verdict goes to `$ORDERS/<NNNN>-handoff/tasted` |
 | 10. Retro | expediter | `retro` | each gate and owner correction becomes a grill question or a check |
 
 **Small work** (one station, a few lines: a bug fix, a constant, a copy edit): the expediter does it
@@ -186,8 +186,15 @@ branch, never opens a pull request.
   branch it stacks on) and **Proven on:** (the exact commits the full suite passed on).
 - **Every session knows what waits to ship.** The session-start brief lists each handoff not yet
   in its home branch (`handoff.py open`), so the project's own flow can ship it from a new
-  session too, and a new order sees what it may stack on. When the project ships is its own rule
-  (the owner's approval at the pass may already be the go): the kitchen never adds a question. A merged one drops off by itself.
+  session too, and a new order sees what it may stack on. When the project ships is its own rule:
+  the kitchen never adds a question. A merged one drops off by itself.
+- **The handoff comes before the pass.** A clean order is handed off at once, and the owner
+  tastes the handoff branch itself, so the project's flow can start while the owner tastes. The
+  verdict is one word in `$ORDERS/<NNNN>-handoff/tasted`, shown next to each open handoff in the
+  brief: `approved`, `changes`, `rejected`, or `none` (no 👤 row, no gate: nothing to taste);
+  `waiting` until then. **A handed-off branch is never rewritten:** changes become the next order,
+  stacked on it. A rejected handoff is no longer open, so nothing stacks on it; dropping its branch
+  is the project's.
 - **A delivered order leaves nothing behind.** In the first session after all of an order's
   handoffs are merged, the session-start hook runs `handoff.py clean`: it removes the order's
   `evidence/` and `scenarios/` folders, its logs, images, videos and archives, and its worktrees,
@@ -211,7 +218,7 @@ One writer per file. Copy each file from `$KITCHEN/templates/`; never invent a s
 | `gates.md` | station asks, owner answers at the pass | owner-only decisions, with the default the station took |
 | `verdict-<sha>.md` | reviewer | Act on / Consider / Noted / Dismissed |
 | `evidence/` | tools, with `ORDER=<id>` | screenshots, videos, logs, outputs |
-| `$ORDERS/<NNNN>-handoff/<repo name>/` | expediter, at the out step | `branch`, `commit`, `summary.md`, `evidence/`: what the project's flow ships (see "Handoff"). `$ORDERS/<NNNN>-handoff/cleaned` once its leftovers are removed |
+| `$ORDERS/<NNNN>-handoff/<repo name>/` | expediter, at the out step | `branch`, `commit`, `summary.md`, `evidence/`: what the project's flow ships (see "Handoff"). `$ORDERS/<NNNN>-handoff/tasted` (the owner's verdict at the pass) and `cleaned` once its leftovers are removed |
 
 ## What proves a plate
 
@@ -229,8 +236,8 @@ Every claim in a plate points at evidence. A test counts only with its exact com
 code and its output path. Each order leaves its tests behind in the repo for the next change: a
 🤖 `e2e-verified` row is a scenario in the product's e2e suite, written in the same order.
 
-**An order is proven completely before the pass.** While cooking, a station runs the scenarios its
-ticket names. Before the pass, the **full suite** runs once on the merged `order/<NNNN>` (its
+**An order is proven completely before the handoff.** While cooking, a station runs the scenarios its
+ticket names. Before the handoff, the **full suite** runs once on the merged `order/<NNNN>` (its
 `results.json` says `"selected": "all"`), so the order proves its own work and that nothing older
 broke.
 Look, feel, phone, real payment: 👤 rows for the owner, with exact steps and a reference image
@@ -323,8 +330,9 @@ with no error), the evidence layout and the safety rules. Scenarios grow order b
 
 | A station or the expediter just does it | Needs the owner's go |
 | --- | --- |
-| read, build, test, run its own check, start its own server on its own port | the handoff (step 9), on the owner's approval at the pass |
-| at the pass, the expediter switches the owner's folder to `order/<NNNN>` and back, only when its working tree is clean (never stash or reset) | |
+| read, build, test, run its own check, start its own server on its own port | the approval of the spec and ownership map (step 5) |
+| the handoff (step 8), once the order is clean | |
+| at the pass, the expediter switches the owner's folder to the handoff branch and back, only when its working tree is clean (never stash or reset) | |
 | commit on its feature branch (only files it owns) | production, deploy, anything outside this machine |
 | change local dev data the ticket names | wipe or restore a database |
 | | **never the kitchen's**, even on a go: push, merge into the home branch, any commit on it, a pull request, a release tag. The project's own flow does them |
@@ -376,11 +384,11 @@ lesson every project needs goes to `$KITCHEN_HOME/retro/kit-proposals.md` for th
 | The product never knows about the kitchen; owner commands need no argument | `agents/taster.md` and the verdict's "Kitchen leak" and "Owner commands" lenses; the expediter reads every product diff for kitchen terms before the review |
 | A project session never changes the plugin | the guard hook (`scripts/kitchen.py guard`) denies edits inside the plugin from any session a kitchen covers; `scripts/test-owner-guard.sh` |
 | Every change to the attack surface is attacked before merge | `kitchen:adversary` writes `attack-<sha>.md`; a proven finding is a fix round with a test that runs the attack. Replayed blind on 4 real bugs a reviewer had caught: found 3 (2026-11-08); the miss, a two-step stored-input delete, became an attack class |
-| No kitchen word or spec id in the product | `scripts/leak-check.py --spec`: by the station before hand-back, by the expediter on every branch before review, `--all` on the whole product before every pass (catches what earlier orders left), `--message` on the handoff commit message, branch name and summary; new file paths too (an order number in a scenario name); `scripts/test-leak-check.sh` |
+| No kitchen word or spec id in the product | `scripts/leak-check.py --spec`: by the station before hand-back, by the expediter on every branch before review, `--all` on the whole product before every handoff (catches what earlier orders left), `--message` on the handoff commit message, branch name and summary; new file paths too (an order number in a scenario name); `scripts/test-leak-check.sh` |
 | Open orders never collide; a handoff names its base | `scripts/handoff.py base` before worktrees are cut, `handoff.py landed` to close an order; its `--selftest` builds real stacked and squash-merged branches |
-| A new session knows the open handoffs | `handoff.py open` in the session-start brief; `scripts/test-session-start.sh` (listed while open, gone once squash-merged) |
+| A new session knows the open handoffs and their verdicts | `handoff.py open` in the session-start brief; `scripts/test-session-start.sh` (listed while open, gone once squash-merged); `handoff.py --selftest` (the verdict shown, a rejected handoff dropped and never stacked on) |
 | A merged order leaves no evidence, logs, media or worktrees behind | `handoff.py clean`, run by the session-start hook; its `--selftest` (nothing removed while open, paperwork kept, a branch deleted on merge still seen through its commit) and `scripts/test-session-start.sh` |
-| The kitchen never pushes or merges | text only: `expedite` §7 has no push or merge step; `agents/station.md` Never |
+| The kitchen never pushes or merges | text only: `expedite` §5 has no push or merge step; `agents/station.md` Never |
 | Stations never ask the owner | `agents/station.md` has no `AskUserQuestion` tool |
 | The AI never writes the code an owner ticket gives the owner | the plugin's `PreToolUse` hook `scripts/kitchen.py guard` denies `Edit`/`Write`/`MultiEdit`/`NotebookEdit` on those paths until the plate is done or the owner says "take over"; `scripts/test-owner-guard.sh`. Writes through Bash: text only (`kitchen:line`) |
 | The station's hand-back file is `plate.md` | Claude Code refuses a subagent's write to a file named `report.md` ("Subagents should return findings as text"); tested 2026-11-04 |
@@ -395,7 +403,7 @@ lesson every project needs goes to `$KITCHEN_HOME/retro/kit-proposals.md` for th
 | A stalled station is replaced | `scripts/watchdog.sh`, run every 5 minutes by the plugin monitor (`monitors/monitors.json` → `scripts/watch-orders.sh`); interrupted stations listed at session start; `scripts/test-watch-orders.sh`, `scripts/test-session-start.sh` |
 | A station tool can't pass while broken | each tool's `--selftest` |
 | Tools prove through the user's door | `scripts/door-check.py` (a scenario imports only the suite, `node:` and the suite's listed packages; the product never imports the suite), run by every `check`; the reviewer reads every `driver/` diff |
-| An order is proven completely | `prove --all` on `order/<NNNN>` before the pass; its `result.json` must say `"selected": "all"` |
+| An order is proven completely | `prove --all` on `order/<NNNN>` before the handoff; its `result.json` must say `"selected": "all"` |
 
 ## Writing style
 

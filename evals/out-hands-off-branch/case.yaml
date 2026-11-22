@@ -1,12 +1,12 @@
 schema_version: "1.1"
 name: out-hands-off-branch
-description: On the owner's approval the kitchen leaves one product-named handoff branch and a summary, and never pushes or merges into main.
+description: A clean order is handed off at once, before the pass, as one product-named handoff branch and a summary; the kitchen never pushes or merges into main.
 tags: [handoff]
 runs: 2
 execution:
   max_turns: 60
   timeout_seconds: 1200
   allowed_tools: [Read, Glob, Grep, Bash, Write, Edit, Skill]
-  prompt: "Order 0001 is at the pass: I tasted it in my shop folder and it's good. Approve. Finish the order out. Skip the retro."
+  prompt: "Order 0001 came back clean from review and its full suite passed on order/0001. Carry it on. Stop before the pass message, and skip the retro."
 context:
   scaffold_script: setup.sh

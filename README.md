@@ -7,8 +7,9 @@ reviewer judges each plate before the owner tastes it.
 
 ## How an order flows
 
-The owner speaks only in the grill and at the two approvals (the hexagons). After the plan is
-approved, nobody asks the owner anything until the pass.
+The owner speaks only in the grill, at the plan's approval and at the pass (the hexagons). After
+the plan is approved, nobody asks the owner anything: a clean order is handed off at once, and the
+owner tastes that handoff branch while the project's own flow can already take it.
 
 ```mermaid
 flowchart TD
@@ -29,10 +30,11 @@ flowchart TD
     S1 & S2 --> OWN["ownership check"]
     OWN --> REVIEW{"kitchen:reviewer + kitchen:adversary<br/>verdict clean, attacks held?"}
     REVIEW -- "Act on or a proven attack (max 2 fix rounds)" --> COOK
-    REVIEW -- "clean" --> PASS{{"The pass: the kitchen switches the owner's folder,<br/>the owner runs the dev command and tastes"}}
-    PASS -- "approved" --> OUT["one handoff branch per repo<br/>(your project pushes or opens the PR)"]
-    PASS -- "changes" --> NEXT["next order"]
-    OUT --> RETRO["kitchen:retro<br/>every miss becomes a check"]
+    REVIEW -- "clean" --> OUT["one handoff branch per repo, at once<br/>(your project ships it its own way)"]
+    OUT --> PASS{{"The pass: the kitchen switches the owner's folder<br/>to the handoff branch, the owner tastes"}}
+    PASS -- "approved" --> RETRO["kitchen:retro<br/>every miss becomes a check"]
+    PASS -- "changes" --> NEXT["next order, stacked on the handoff"]
+    NEXT --> RETRO
 ```
 
 The rules are in [`RULES.md`](RULES.md). The flow, step by step:
@@ -89,7 +91,7 @@ The plugin's session-start hook sees no kitchen covers the folder, and `kitchen:
 outside the codebase. It reads the folder, asks one round of questions (kitchen name, stations,
 ports), and writes only to `~/.claude/kitchens/<name>/`. No repo, `CLAUDE.md` or `.claude/` file is
 touched. Then the grill starts: grill → spec → tickets with the taster dry run → your approval →
-stations cook → review → the pass → one handoff branch per repo, which your project ships its own way.
+stations cook → review → one handoff branch per repo, which your project ships its own way → the pass, where you taste that branch.
 
 One machine holds many kitchens, one per workspace or project:
 
@@ -127,7 +129,7 @@ python3 $K/scripts/ownership-check.py --selftest; python3 $K/scripts/scope.py; s
 
 | Case | Scores |
 | --- | --- |
-| `out-hands-off-branch` | on approval: one product-named handoff branch and summary; no push, no merge into `main` |
+| `out-hands-off-branch` | a clean order: one product-named handoff branch and summary, before the pass; no push, no merge into `main` |
 | `stack-on-open-handoff` | a new order overlapping an unmerged handoff cooks on top of it |
 | `door-wall-catches-backdoor` | a scenario importing the product's code goes back to the station |
 | `leak-check-order-number-path` | a scenario named after the order goes back to the station |

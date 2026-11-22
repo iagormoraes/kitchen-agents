@@ -24,7 +24,7 @@ through Bash or any other tool.
 1. The ticket is `Station: owner`, cut by `mise-en-place` into **steps**, each with: the files, the
    concept, the test cases (template: `templates/ticket.md`, "Owner steps").
 2. The owner cooks in their own folder. Switch it to the ticket's branch yourself, as `expedite`
-   §5 Set the table does (look first: never over uncommitted changes). An owner ticket has no
+   §6 Set the table does (look first: never over uncommitted changes). An owner ticket has no
    worktree, so the branch is free to switch to. The owner never runs git.
 3. Write the **test case descriptions** for every step into the test files, as pending or skipped
    tests in the repo's own test runner ("adds a task and returns it with done false"): one line per

@@ -18,5 +18,5 @@ put "$ev/result.json" <<R
  "checks": [{"id": "S1.invoice-export", "pass": true, "detail": "csv downloaded"}, {"id": "home-page", "pass": true, "detail": ""}]}
 R
 mkdir -p "$ev/invoice-export"; printf '\x89PNG\r\n\x1a\nfake' > "$ev/invoice-export/01-download.png"
-# the pass already happened: order branch merged, owner's folder switched to it
-g switch -q -c order/0001 main && g merge -q --no-ff feat/0001-web -m "Merge feat/0001-web"
+# reviewed clean and fully proven: order branch merged, owner's folder still on main (no pass yet)
+g switch -q -c order/0001 main && g merge -q --no-ff feat/0001-web -m "Merge feat/0001-web" && g switch -q main

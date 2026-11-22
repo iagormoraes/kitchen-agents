@@ -20,8 +20,14 @@ new order's tickets:
 
 `open` lists every handoff of the kitchen not yet in its repo's home branch (the Repos table of
 kitchen.md gives each repo's path and home branch), one line each:
-`- <repo>: <branch> on <base> · <summary path>`. The session-start brief prints it, so a new
-session knows what waits to be shipped. A record whose repo or branch is gone is skipped.
+`- <repo>: <branch> on <base> · <summary path> · tasted: <verdict>`. The session-start brief
+prints it, so a new session knows what waits to be shipped. A record whose repo or branch is gone
+is skipped.
+
+The kitchen hands off before the pass, so the owner's verdict comes later, in
+`$ORDERS/<NNNN>-handoff/tasted` (one word): `approved`, `changes` (the handoff stays open and the
+next order stacks on it), `rejected`, or `none` (nothing to taste). No file yet: `waiting`. A
+rejected handoff is no longer open: `open` and `base` skip it, so nothing stacks on it.
 
 `clean` removes what a delivered order leaves behind, once every handoff of the order is in its
 home branch: each `evidence/` and `scenarios/` folder and every log, image, video or archive
@@ -74,6 +80,12 @@ def owns_of(repo, tickets):
     return owns, excl
 
 
+def tasted(order_folder):
+    """The owner's verdict on a handoff: approved, changes, rejected, none, or waiting."""
+    f = os.path.join(order_folder, "tasted")
+    return (open(f).read().strip() or "waiting") if os.path.exists(f) else "waiting"
+
+
 def pick_base(repo, home, orders, tickets):
     """('home' or branch, []) or (None, [the branches that block it])."""
     owns, excl = owns_of(repo, tickets)
@@ -81,7 +93,7 @@ def pick_base(repo, home, orders, tickets):
     open_branches = []
     for rec in sorted(glob.glob(os.path.join(orders, "*-handoff", name, "branch"))):
         b = open(rec).read().strip()
-        if b and not landed(repo, home, b):
+        if b and tasted(os.path.dirname(os.path.dirname(rec))) != "rejected" and not landed(repo, home, b):
             open_branches.append(b)
     hit = [b for b in open_branches
            if any(oc.owned(p, owns) and not oc.owned(p, excl)
@@ -187,11 +199,12 @@ def open_handoffs(home):
             continue
         name, path, branch_home = repos[os.path.basename(folder)]
         b = open(rec).read().strip()
-        if not b or record_landed(folder, path, branch_home) is not False:   # landed, or gone
+        verdict = tasted(os.path.dirname(folder))
+        if not b or verdict == "rejected" or record_landed(folder, path, branch_home) is not False:   # landed, gone or dropped
             continue
         summary = os.path.join(folder, "summary.md")
         m = os.path.exists(summary) and re.search(r"\*\*Builds on:\*\*\s*`([^`]+)`", open(summary).read())
-        out.append(f"- {name}: {b} on {m.group(1) if m else branch_home} · {summary}")
+        out.append(f"- {name}: {b} on {m.group(1) if m else branch_home} · {summary} · tasted: {verdict}")
     return out
 
 
@@ -230,6 +243,9 @@ def selftest():
         open(os.path.join(orders, "0002-handoff", "shop", "summary.md"), "w").write("**Builds on:** `invoice-export`\n")
         assert [l.split(" · ")[0] for l in open_handoffs(t)] == [
             "- shop: invoice-export on main", "- shop: invoice-email on invoice-export", "- shop: cart-badge on main"], open_handoffs(t)
+        assert all(l.endswith(" · tasted: waiting") for l in open_handoffs(t)), open_handoffs(t)
+        open(os.path.join(orders, "0003-handoff", "tasted"), "w").write("approved\n")
+        assert open_handoffs(t)[2].endswith(" · tasted: approved"), open_handoffs(t)
         assert base("src/profile") == ("main", []), base("src/profile")                  # disjoint
         assert base("src/cart") == ("cart-badge", []), base("src/cart")                  # one overlap
         assert base("src/invoice") == ("invoice-email", []), base("src/invoice")         # a chain: the tip
@@ -255,6 +271,12 @@ def selftest():
         assert clean(t) == []                                                            # done once
         assert os.path.exists(os.path.join(orders, "0001-handoff", "cleaned"))           # landed, nothing to remove
         assert base("src/cart") == ("main", []), base("src/cart")                        # landed: home again
+        # a rejected handoff is dropped: nothing stacks on it and the brief stops listing it
+        commit("cart-total", "src/cart/total.js", "main"); handoff("0004", "cart-total"); sh("switch", "-q", "main")
+        assert base("src/cart") == ("cart-total", []), base("src/cart")
+        open(os.path.join(orders, "0004-handoff", "tasted"), "w").write("rejected\n")
+        assert base("src/cart") == ("main", []), base("src/cart")
+        assert all("cart-total" not in l for l in open_handoffs(t)), open_handoffs(t)
         assert [l.split(" · ")[0] for l in open_handoffs(t)] == ["- shop: invoice-email on invoice-export"]
         # the project deletes the branch on merge: the recorded commit still shows it landed
         open(os.path.join(orders, "0002-handoff", "shop", "commit"), "w").write(
