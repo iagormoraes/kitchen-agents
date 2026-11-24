@@ -47,6 +47,15 @@ it (append-only: a wrong call gets a new row that supersedes it, never an edit).
   repeat. Tests check behavior through public interfaces. Expected values come from the spec or a
   worked example, never recomputed the way the code does. Mock only at a real system boundary.
 - After each slice: run the ticket's **Verify** commands, then commit (only files you changed).
+- **A command that can run longer than one shell call** (a call stops at 10 minutes; the ticket
+  marks such Verify commands `# long`): start it **once**, in the background, with its output and
+  exit code in files under `$ORDERS/<id>/evidence/`:
+  `<command> > <log> 2>&1; echo $? > <exit file>`. Then wait only with calls that end on their own
+  before the limit, one at a time, repeated until the exit file exists:
+  `n=0; until [ -s <exit file> ] || [ $n -ge 27 ]; do sleep 20; n=$((n+1)); done` (at most 9
+  minutes, no `timeout` needed). Never a wait without its own bound, and never a second background
+  shell for the same run: a call that hits the limit keeps running in the background, and each
+  one is another task on the owner's screen.
 - **Prove through the user's door** with your station's tools (`<tools path>/check`, `prove`, path in the ticket;
   contract in the kitchen RULES.md "Station tools"). Each 🤖 `e2e-verified` row is a scenario you
   write in the repo's e2e suite, at the exact path the ticket's Owns names, named by the behavior

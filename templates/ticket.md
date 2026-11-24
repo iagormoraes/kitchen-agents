@@ -54,6 +54,7 @@ files; it writes the test cases (excluded from Owns with `!`, for example `!<the
 REPO=<worktree> ORDERS=<orders path> ORDER=<order id> PORT=<port> <tools path>/check
 REPO=<worktree> ORDERS=<orders path> ORDER=<order id> PORT=<port> <tools path>/prove --row <smoke row>=<scenario>
 <any other exact command proving a criterion, every argument filled>
+<a command that can run over 10 minutes ends with: # long  (run once in the background: agents/station.md)>
 ```
 
 - **🤖 rows to run:** <ids from the spec smoke table, with their steps pasted; each e2e row with
